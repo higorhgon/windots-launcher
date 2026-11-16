@@ -85,23 +85,29 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock x:Name="Crumb" Grid.Row="0" Margin="20,14,20,0" FontSize="12" Foreground="{DynamicResource Muted}" />
-
-            <Grid Grid.Row="1" Margin="20,6,20,10">
-                <TextBlock x:Name="Hint" Text="Search..." FontSize="20" Foreground="{DynamicResource Muted}" Opacity="0.7"
-                           VerticalAlignment="Center" IsHitTestVisible="False" />
-                <TextBox x:Name="Filter" FontSize="20" Background="Transparent" BorderThickness="0"
-                         Foreground="{DynamicResource Fg}" CaretBrush="{DynamicResource Accent}"
-                         SelectionBrush="{DynamicResource SelBg}" VerticalContentAlignment="Center" Padding="0,6"
-                         TextChanged="Filter_TextChanged" />
+            <!-- one row, like PowerToys Run: [trail in a submenu] [search box] -->
+            <Grid Grid.Row="0" Height="52" Margin="20,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock x:Name="Crumb" Grid.Column="0" Margin="0,0,14,0" FontSize="13" VerticalAlignment="Center"
+                           Foreground="{DynamicResource Muted}" Visibility="Collapsed" />
+                <Grid Grid.Column="1">
+                    <TextBlock x:Name="Hint" Text="Search..." FontSize="18" Foreground="{DynamicResource Muted}" Opacity="0.7"
+                               VerticalAlignment="Center" IsHitTestVisible="False" />
+                    <TextBox x:Name="Filter" FontSize="18" Background="Transparent" BorderThickness="0"
+                             Foreground="{DynamicResource Fg}" CaretBrush="{DynamicResource Accent}"
+                             SelectionBrush="{DynamicResource SelBg}" VerticalContentAlignment="Center" Padding="0"
+                             TextChanged="Filter_TextChanged" />
+                </Grid>
             </Grid>
 
-            <Border Grid.Row="2" Height="1" Background="{DynamicResource Line}" />
+            <Border Grid.Row="1" Height="1" Background="{DynamicResource Line}" />
 
-            <ListBox x:Name="List" Grid.Row="3" Background="Transparent" BorderThickness="0" Margin="0,6,0,8"
+            <ListBox x:Name="List" Grid.Row="2" Background="Transparent" BorderThickness="0" Margin="0,6,0,8"
                      MaxHeight="420" Focusable="False" ItemContainerStyle="{StaticResource RowStyle}"
                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" MouseLeftButtonUp="List_MouseLeftButtonUp" />
         </Grid>
