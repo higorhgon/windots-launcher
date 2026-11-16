@@ -118,11 +118,15 @@ public partial class LauncherWindow : Window
         LoadMenu();
         if (ShellApps.Age > TimeSpan.FromMinutes(10)) RefreshApps();   // new installs show up
         _stack.Clear();
+        // "run" is the launcher with "> " already typed: a replacement for Win+R (Run)
+        var run = route.Equals("run", StringComparison.OrdinalIgnoreCase);
+        if (run) route = "launcher";
         var item = _model.Resolve(route) ?? _model.Resolve("root");
         if (item == null) return;
         if (item.IsAction) { Windots.Run(item.Action); return; }   // a route that is a command just runs
         Open(item.IsLink ? (_model.Resolve(item.Target)?.Id ?? "root") : item.Id);
-        Filter.Text = "";
+        Filter.Text = run ? "> " : "";
+        Filter.CaretIndex = Filter.Text.Length;
         Place();
         _activated = false;
         Show();
