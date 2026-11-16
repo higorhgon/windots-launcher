@@ -134,21 +134,18 @@ No menu raiz e no lançador:
 a imagem escolhida ao lado, à direita (o nome, o tamanho em pixels e a origem). Enter define a imagem como plano
 de fundo da área de trabalho, preenchendo a tela; a que está em uso fica com o ✓ e a lista já abre nela.
 
-- **De onde vêm:** as suas, em `~\.config\windots\backgrounds\<tema>` (a pasta que o `windots-install-backgrounds`
-  já lê; os 12 do Catppuccin do windots estão aí), e as do omarchy (`themes/<tema>/backgrounds` no repositório
-  dele, 117 imagens nos 23 temas, de 0,7 a 24 MB por tema). Estas só são baixadas quando você pede: um tema que
-  ainda não as tem termina com a linha "Download the <tema> backgrounds from omarchy", e Enter baixa
-  (`Downloading 2/4...` na própria linha, sem fechar a janela) para `~\.local\share\windots\backgrounds\<tema>`.
-  Os vídeos do omarchy ficam de fora.
+- **De onde vêm:** as imagens do tema no repositório do windots, em `default/themes/<tema>/backgrounds` (as 98 do
+  omarchy, `themes/<tema>/backgrounds`, e, dentro do `catppuccin`, as 12 do windots; a origem aparece como `theme`),
+  e as só desta máquina, em `~\.config\windots\backgrounds\<tema>` (`this machine`). Um mesmo nome de arquivo nas duas pastas aparece uma
+  vez, o do tema. Os vídeos do omarchy ficaram de fora.
 - **Prévias:** uma miniatura de 760 px por imagem, feita uma vez e guardada em
   `~\.local\share\windots\backgrounds\.thumbs` (um WebP de 8K leva mais de um segundo para abrir). A prévia carrega
   fora da janela, então navegar na lista não trava.
 - **Aplicar:** JPG, PNG e BMP vão direto; WebP e GIF o Windows não aceita em todo lugar, então são gravados uma vez
   como JPEG da largura da tela (até 3840) em `~\.local\state\windots\wallpaper`, e esse arquivo é o usado. A escolha
   fica em `~\.local\state\windots\background`. Definir uma imagem tira o Windows do modo apresentação de slides.
-- `Settings › Background settings` abre a tela de Configurações do Windows (era o que esta linha fazia).
-- `windots-launcher.exe dump style.background <arquivo>` lista as linhas e `dump bgdownload:<tema> <arquivo>` baixa um
-  tema, sem janela.
+- `Settings › Background settings` abre a tela de Configurações do Windows.
+- `windots-launcher.exe dump style.background <arquivo>` lista as linhas, sem janela.
 
 ## O menu
 
@@ -184,8 +181,7 @@ Um launcher aberto trava o executável: `windots-launcher.exe quit` antes de com
 Não testado ainda: segundo monitor e escala de tela diferente de 100%, tema claro, a ação `Update windots`
 do menu Setup, o `Shift+Enter` de um item do menu com `alt`, o `> comando` com Enter (abre o Windows Terminal), o
 encerrar de um programa com permissão de administrador, Enter em um favorito, em uma busca na web e em um
-arquivo ou pasta (abrir de fato), o Tab de caminho na janela, o download de backgrounds sem internet e com
-temas grandes (matte-black, 24 MB), o papel de parede em mais de um monitor, o início automático no login e
+arquivo ou pasta (abrir de fato), o Tab de caminho na janela, o papel de parede em mais de um monitor, o início automático no login e
 apps que a lista do Windows mostra duas vezes com ids diferentes.
 
 ## Referências

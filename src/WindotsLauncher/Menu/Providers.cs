@@ -151,13 +151,11 @@ public sealed class KeybindingsProvider : IProvider
 
 
 /// <summary>
-/// The backgrounds of the current theme, each with a preview on the right; Enter sets it as the desktop background.
-/// A theme whose images were not downloaded yet ends with a row that fetches them from omarchy.
+/// The backgrounds of the current theme (the ones that come with it and the ones of this machine), each with a preview on
+/// the right; Enter sets it as the desktop background.
 /// </summary>
 public sealed class BackgroundsProvider : IProvider
 {
-    private static readonly HashSet<string> Downloading = new();
-
     public IEnumerable<Row> Rows()
     {
         var theme = Windots.CurrentTheme();
@@ -179,43 +177,7 @@ public sealed class BackgroundsProvider : IProvider
                 Run = () => _ = Backgrounds.Wallpaper.ApplyAsync(path),
             };
         }
-        if (!Backgrounds.Wallpaper.IsDownloaded(theme))
-        {
-            Row? self = null;
-            self = new Row
-            {
-                Icon = "\uf019",
-                Label = Downloading.Contains(theme) ? "Downloading..." : $"Download the {Windots.Title(theme)} backgrounds from omarchy",
-                Description = images.Count == 0 ? "no images for this theme yet" : "more images for this theme",
-                KeepOpen = true,
-                SearchText = "download omarchy backgrounds",
-                Run = () => Download(theme, self!),
-            };
-            yield return self;
-        }
-        else if (images.Count == 0)
-        {
-            yield return new Row { Icon = "\uf03e", Label = "This theme has no backgrounds", Description = "put images in ~\\.config\\windots\\backgrounds\\" + theme };
-        }
-    }
-
-    private static void Download(string theme, Row row)
-    {
-        if (!Downloading.Add(theme)) return;
-        var ui = System.Windows.Application.Current.Dispatcher;
-        row.Relabel("Downloading...");
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await Backgrounds.Wallpaper.DownloadAsync(theme, (done, total) => ui.InvokeAsync(() => row.Relabel($"Downloading {done}/{total}...")));
-                ui.Invoke(() => { Downloading.Remove(theme); Backgrounds.Wallpaper.RaiseChanged(); });
-            }
-            catch (Exception ex)
-            {
-                Windots.Trace($"background download {theme}: {ex.Message}");
-                ui.Invoke(() => { Downloading.Remove(theme); row.Relabel("Download failed (offline?): Enter tries again"); });
-            }
-        });
+        if (images.Count == 0)
+            yield return new Row { Icon = "\uf03e", Label = "This theme has no backgrounds", Description = "put images in default\\themes\\" + theme + "\\backgrounds, or in ~\\.config\\windots\\backgrounds\\" + theme };
     }
 }

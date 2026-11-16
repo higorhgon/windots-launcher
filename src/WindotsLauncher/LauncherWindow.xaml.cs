@@ -29,12 +29,6 @@ public partial class LauncherWindow : Window
         Activated += (_, _) => { _activated = true; Windots.Trace($"Activated visible={IsVisible}"); };
         Deactivated += (_, _) => { Windots.Trace($"Deactivated activated={_activated} visible={IsVisible}"); if (_activated && IsVisible) Hide(); };
         PreviewKeyDown += OnPreviewKeyDown;
-        Backgrounds.Wallpaper.Changed += () => Dispatcher.InvokeAsync(() =>
-        {
-            if (IsVisible && _current is { Provider: "backgrounds" }) Open(_current.Id);   // the new images
-        });
-        // created hidden: the first Summon only has to show it
-        new WindowInteropHelper(this).EnsureHandle();
     }
 
     // ------------------------------------------------------------------ palette
@@ -289,7 +283,7 @@ public partial class LauncherWindow : Window
             return;
         }
         if (row.NeedsConfirm && !row.Confirming) { row.Confirming = true; return; }
-        if (!row.KeepOpen) Hide();
+        Hide();
         if (alt && row.RunAlt != null) row.RunAlt(); else row.Run?.Invoke();
     }
 

@@ -1,33 +1,27 @@
 using System.IO;
-using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Windows.Media.Imaging;
 using Microsoft.Win32;
 
 namespace WindotsLauncher.Backgrounds;
 
 /// <summary>
-/// The backgrounds of a theme, like omarchy's themes/&lt;name&gt;/backgrounds: the images of the theme (downloaded from
-/// omarchy on request into ~\.local\share\windots\backgrounds\&lt;theme&gt;) and the person's own
-/// (~\.config\windots\backgrounds\&lt;theme&gt;, the folder windots-install-backgrounds already reads). Also: thumbnails,
-/// the preview of an image, and setting one as the desktop background.
+/// The backgrounds of a theme, like omarchy's themes/&lt;name&gt;/backgrounds: the images that come with the theme in the
+/// windots repository (default\themes\&lt;theme&gt;\backgrounds) and the ones only this machine has
+/// (~\.config\windots\backgrounds\&lt;theme&gt;). Also: thumbnails, the preview of an image, and setting one as the
+/// desktop background.
 /// </summary>
 public static class Wallpaper
 {
     private static readonly string[] Extensions = { ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp" };
 
+    public static string ThemeDir(string theme) => Path.Combine(Windots.ThemesDir, theme, "backgrounds");
     public static string UserDir(string theme) => Path.Combine(Windots.Home, ".config", "windots", "backgrounds", theme);
-    public static string CacheDir(string theme) => Path.Combine(Windots.Home, ".local", "share", "windots", "backgrounds", theme);
     private static string ThumbDir => Path.Combine(Windots.Home, ".local", "share", "windots", "backgrounds", ".thumbs");
     private static string ConvertedDir => Path.Combine(Windots.Home, ".local", "state", "windots", "wallpaper");
     private static string StateFile => Path.Combine(Windots.Home, ".local", "state", "windots", "background");
-
-    /// <summary>Raised when a download finishes, so an open background list can show the new images.</summary>
-    public static event Action? Changed;
-    public static void RaiseChanged() => Changed?.Invoke();
 
     public sealed record Image(string Path, string Name, string Origin, long Bytes);
 
@@ -52,65 +46,23 @@ public static class Wallpaper
     public static List<Image> List(string theme)
     {
         var list = new List<Image>();
-        foreach (var (dir, origin) in new[] { (UserDir(theme), "your folder"), (CacheDir(theme), "omarchy") })
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);   // the same file name in both folders: the theme's wins
+        foreach (var (dir, origin) in new[] { (ThemeDir(theme), "theme"), (UserDir(theme), "this machine") })
         {
             if (!Directory.Exists(dir)) continue;
             foreach (var f in Directory.EnumerateFiles(dir).Where(IsImage).OrderBy(f => f, StringComparer.CurrentCultureIgnoreCase))
             {
+                if (!seen.Add(Path.GetFileName(f))) continue;
                 try { list.Add(new Image(f, PrettyName(f), origin, Real(f).Length)); } catch { /* a file being replaced */ }
             }
         }
         return list;
     }
 
-    public static bool IsDownloaded(string theme) => File.Exists(Path.Combine(CacheDir(theme), ".complete"));
-
     /// <summary>The image the person chose last (what the list marks with a check).</summary>
     public static string? CurrentSource()
     {
         try { var p = File.ReadAllText(StateFile).Trim(); return p.Length > 0 ? p : null; } catch { return null; }
-    }
-
-    // ------------------------------------------------------------------ download
-
-    private static readonly HttpClient Http = CreateHttp();
-
-    private static HttpClient CreateHttp()
-    {
-        var c = new HttpClient { Timeout = TimeSpan.FromSeconds(60) };
-        c.DefaultRequestHeaders.UserAgent.ParseAdd("windots-launcher");
-        return c;
-    }
-
-    /// <summary>
-    /// Downloads the theme's backgrounds from omarchy (omacom/omarchy, themes/&lt;name&gt;/backgrounds): the list from the
-    /// GitHub API, then each image. Videos are left out (a desktop background here is a picture).
-    /// </summary>
-    public static async Task DownloadAsync(string theme, Action<int, int> progress)
-    {
-        var json = await Http.GetStringAsync($"https://api.github.com/repos/omacom/omarchy/contents/themes/{theme}/backgrounds?ref=quattro");
-        using var doc = JsonDocument.Parse(json);
-        var files = doc.RootElement.EnumerateArray()
-            .Where(e => e.GetProperty("type").GetString() == "file" && IsImage(e.GetProperty("name").GetString() ?? ""))
-            .Select(e => (name: e.GetProperty("name").GetString()!, url: e.GetProperty("download_url").GetString()!))
-            .ToList();
-        var dir = CacheDir(theme);
-        Directory.CreateDirectory(dir);
-        for (var i = 0; i < files.Count; i++)
-        {
-            progress(i, files.Count);
-            var target = Path.Combine(dir, files[i].name);
-            if (!File.Exists(target))
-            {
-                var part = target + ".part";
-                await using (var s = await Http.GetStreamAsync(files[i].url))
-                await using (var f = File.Create(part)) await s.CopyToAsync(f);
-                File.Move(part, target, true);
-            }
-            await Task.Run(() => { try { ThumbPath(target); } catch { /* the preview makes it when needed */ } });
-        }
-        progress(files.Count, files.Count);
-        File.WriteAllText(Path.Combine(dir, ".complete"), DateTime.UtcNow.ToString("o"));
     }
 
     // ------------------------------------------------------------------ previews
