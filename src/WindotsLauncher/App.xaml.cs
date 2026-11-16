@@ -36,8 +36,8 @@ public partial class App : Application
         }
         if (verb == "quit" || verb == "close") { Shutdown(); return; }
 
-        _ = Apps.ShellApps.RefreshAsync();   // the app index, in the background
         _window = new LauncherWindow();
+        _window.RefreshApps();   // the app index, in the background
         StartPipeServer();
         if (verb == "background") _window.Prewarm();   // started at login: warm up now, open fast later
         else _window.Summon(route, toggle: false);

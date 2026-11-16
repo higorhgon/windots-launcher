@@ -1,10 +1,10 @@
 # windots-launcher
 
 Lançador e menu de comandos do [windots](https://github.com/higorhgon/windots), feito em WPF (.NET 9) para
-Windows 11. O objetivo é funcionar como o menu do omarchy e, no fim, **substituir o Flow Launcher**.
+Windows 11. O objetivo é funcionar como o menu do omarchy e como lançador de apps e arquivos (ele substituiu o Flow Launcher).
 
 > Estado: **fases 1 a 3 prontas** (motor, menu do omarchy, temas, atalhos de teclado, apps, calculadora, shell,
-> processos e comandos do sistema). Arquivos, favoritos, URLs e a troca do Flow vêm nas próximas fases.
+> processos e comandos do sistema). Arquivos, favoritos do navegador, URLs e busca na web vêm na próxima fase.
 
 ## O que ele é
 
@@ -14,9 +14,9 @@ Windows 11. O objetivo é funcionar como o menu do omarchy e, no fim, **substitu
   `label`, `action`, `target`, `provider` (lista dinâmica), `aliases`, `description`, `when`, `checked` e
   `alt`, além de rotas e voltar um nível. Uma adição do windots: `confirm` (o primeiro Enter pergunta, o
   segundo executa), para reiniciar, desligar e afins.
-- **Lançador de apps e arquivos**, para trocar o Flow Launcher (hoje com Program, Explorer, Calculator,
-  Shell, Sys, ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Os apps já existem; o resto vem
-  nas fases 3 e 4.
+- **Lançador de apps e arquivos**, no lugar do Flow Launcher (que tinha Program, Explorer, Calculator, Shell, Sys,
+  ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Já existem apps, calculadora, shell, processos e
+  sistema; faltam arquivos, favoritos, URLs e busca na web.
 - **Visual do PowerToys Run** (caixa de busca arredondada, lista com ícones, seleção na cor de destaque),
   pintado pela paleta do tema atual do windots (`~\.local\state\windots\theme.name`, paletas em
   `windots\default\themes`, as mesmas do omarchy).
@@ -34,7 +34,7 @@ Abrir:
 | Como | O que abre |
 |---|---|
 | `Win+Space` | menu raiz (liga/desliga) |
-| `Alt+Space` | o lançador: só a barra de busca até você digitar (apps, contas, `> comando`, `kill`, comandos, temas) |
+| `Win+Alt+Space` | o lançador: abre já listando os apps (os mais usados primeiro) e procura apps, contas, `> comando`, `kill`, comandos e temas ao digitar |
 | `Alt+K` | atalhos de teclado (era o fzf) |
 | `Alt+Ctrl+Shift+Space` | temas (era o fzf) |
 | `windots menu [verbo] [rota]` | qualquer rota: `windots menu summon style.theme` |
@@ -51,8 +51,9 @@ com `SetForegroundWindow`; se o Windows recusar, a janela compartilha a fila de 
 plano e pede de novo (o Windows só dá foco a quem recebeu a última entrada). `WINDOTS_LAUNCHER_TRACE=<arquivo>`
 grava um log de diagnóstico.
 
-O lançador é a rota `launcher` (apelidos `apps` e `run`): procura as mesmas coisas que o menu raiz, mas não lista o menu
-enquanto o campo está vazio e a janela é só a barra, como o Flow Launcher e o PowerToys Run.
+O lançador é a rota `launcher` (apelidos `apps` e `run`, o `Super+Alt+Space` do omarchy): procura as mesmas coisas que o
+menu raiz, mas com o campo vazio lista os apps (os 30 mais usados, depois em ordem alfabética) em vez do menu.
+O `Alt+Space` não tem atalho.
 
 Verbos (como o `omarchy menu`): `toggle [rota]` (padrão), `summon [rota]`, `close`, `refresh`, `quit`. Uma
 rota é o id de um menu (`style.theme`) ou um apelido (`theme`, `keys`).
@@ -112,9 +113,8 @@ campos citados sobrescritos (como a extensão do omarchy). Comentários e vírgu
 - `action`: comando PowerShell, executado como o whkd faz (`pwsh -NoProfile -Command ...`, sem janela, com
   `~\windots\bin` no PATH).
 - `when`, `checked`, `disabled`: comandos do `cmd.exe`; código de saída 0 significa "sim".
-- `provider`: `themes` (os 23 temas do windots, com as cores, o modo e o ✓ no atual) e `keybindings` (whkd,
-  Flow Launcher e AutoHotkey, as 84 linhas que o `windots-menu-keybindings` listava; Enter roda o comando
-  do whkd).
+- `provider`: `themes` (os 23 temas do windots, com as cores, o modo e o ✓ no atual) e `keybindings` (whkd e
+  AutoHotkey, as mesmas linhas que o `windots-menu-keybindings` lista; Enter roda o comando do whkd).
 
 ## Fases
 
@@ -123,9 +123,8 @@ campos citados sobrescritos (como a extensão do omarchy). Comentários e vírgu
 2. **Pronta.** Apps: Menu Iniciar e apps da Store, ícones, ranking por uso.
 3. **Pronta.** Sistema (`sys`), calculadora, comandos (Shell) e processos.
 4. Arquivos, favoritos do navegador, URLs e busca na web.
-5. Desinstalar o Flow Launcher e passar o `Alt+Space` para este app.
 
-Até a fase 3 estar pronta o Flow Launcher continua instalado (é mais leve que o PowerToys inteiro).
+O Flow Launcher já foi desinstalado e saiu do windots (pacote, atalho de inicialização e configuração).
 
 ## Desenvolvimento
 

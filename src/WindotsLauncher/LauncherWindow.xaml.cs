@@ -18,7 +18,7 @@ public partial class LauncherWindow : Window
     private MenuModel _model = new();
     private MenuItem? _current;
     private bool _activated;
-    /// <summary>The "launcher" route: like the root menu, but a bare search bar until you type (Flow Launcher, PowerToys Run).</summary>
+    /// <summary>The "launcher" route: the root menu's search, but it opens listing the apps (most used first) instead of the menu.</summary>
     private bool _launcherMode;
 
     public LauncherWindow()
@@ -93,6 +93,16 @@ public partial class LauncherWindow : Window
         }
     }
 
+    /// <summary>Reads the app list in the background; when it is ready, shows it if the launcher is open and fetches the first icons.</summary>
+    public void RefreshApps()
+    {
+        _ = ShellApps.RefreshAsync().ContinueWith(_ => Dispatcher.InvokeAsync(() =>
+        {
+            foreach (var row in SearchEngine.AllApps()) _ = ShellApps.LoadIconAsync(row.App!.Id);   // the first icons, before they are needed
+            if (IsVisible && _launcherMode && Filter.Text.Trim().Length == 0) ApplyFilter();
+        }));
+    }
+
     public void Refresh()
     {
         if (!IsVisible || _current == null) return;
@@ -106,7 +116,7 @@ public partial class LauncherWindow : Window
         if (toggle && IsVisible) { Hide(); return; }
         ApplyPalette(Palette.Load(Windots.CurrentTheme()));
         LoadMenu();
-        if (ShellApps.Age > TimeSpan.FromMinutes(10)) _ = ShellApps.RefreshAsync();   // new installs show up
+        if (ShellApps.Age > TimeSpan.FromMinutes(10)) RefreshApps();   // new installs show up
         _stack.Clear();
         var item = _model.Resolve(route) ?? _model.Resolve("root");
         if (item == null) return;
@@ -148,7 +158,7 @@ public partial class LauncherWindow : Window
         Hint.Visibility = text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         foreach (var r in _all) r.Confirming = false;
         var searchFrom = _launcherMode ? _model.Resolve("root") : _current;
-        var rows = _launcherMode && text.Trim().Length == 0 ? new List<Row>() : SearchEngine.Query(_model, searchFrom, _all, text);
+        var rows = _launcherMode && text.Trim().Length == 0 ? SearchEngine.AllApps() : SearchEngine.Query(_model, searchFrom, _all, text);
         _view.Clear();
         foreach (var r in rows) _view.Add(r);
         List.Visibility = _view.Count > 0 ? Visibility.Visible : Visibility.Collapsed;   // no rows: only the bar

@@ -48,7 +48,6 @@
   "setup.restart.masir": { "icon": "\uf245", "label": "masir (focus follows mouse)", "action": "windots-restart-masir" },
   "setup.restart.switcher": { "icon": "\uf0c9", "label": "komorebi-switcher", "action": "windots-restart-komorebi-switcher" },
   "setup.restart.explorer": { "icon": "\uf07b", "label": "Explorer (taskbar)", "action": "windots-restart-explorer", "confirm": true },
-  "setup.restart.flow": { "icon": "\uf002", "label": "Flow Launcher", "action": "windots-restart-flow-launcher" },
   "setup.restart.hotkeys": { "icon": "\uf11c", "label": "AutoHotkey script", "action": "windots-restart-hotkeys" },
 
   "system": { "icon": "\uf011", "label": "System", "description": "Lock, sleep, restart, shut down" },

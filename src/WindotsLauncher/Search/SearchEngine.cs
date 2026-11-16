@@ -58,6 +58,11 @@ public static class SearchEngine
 
     // ------------------------------------------------------------------ apps
 
+    /// <summary>The apps listed while the launcher's box is empty: the ones you start most first, then by name.</summary>
+    public static List<Row> AllApps(int take = 30) => ShellApps.Apps
+        .OrderByDescending(a => Usage.Count(a.Id)).ThenBy(a => a.Name, StringComparer.CurrentCultureIgnoreCase)
+        .Take(take).Select(AppRow).ToList();
+
     public static Row AppRow(AppEntry app) => new()
     {
         Icon = "",

@@ -51,7 +51,7 @@ public sealed class ThemesProvider : IProvider
 }
 
 /// <summary>
-/// Every hotkey: whkd, Flow Launcher and AutoHotkey, the lists windots-menu-keybindings shows.
+/// Every hotkey: whkd and AutoHotkey, the lists windots-menu-keybindings shows.
 /// Enter runs the whkd command of the row.
 /// </summary>
 public sealed class KeybindingsProvider : IProvider
@@ -81,7 +81,6 @@ public sealed class KeybindingsProvider : IProvider
     {
         var all = new List<Binding>();
         ReadWhkd(all);
-        ReadFlow(all);
         ReadAhk(all);
         foreach (var b in all)
         {
@@ -117,36 +116,6 @@ public sealed class KeybindingsProvider : IProvider
             var desc = note.Success ? note.Groups[1].Value.Trim() : FormatCommand(cmd);
             rows.Add(new Binding(FormatKeys(m.Groups[1].Value), section, desc, cmd));
         }
-    }
-
-    private static readonly Dictionary<string, string> FlowDesc = new()
-    {
-        ["sys"] = "Menu do sistema (desligar, reiniciar, bloquear...)", ["app"] = "Aplicativos",
-        ["?"] = "Menu de plugins do Flow", ["s som"] = "Configurações de som", ["s bluetooth"] = "Configurações de bluetooth",
-        ["s rede"] = "Configurações de rede", ["s energia"] = "Configurações de energia",
-    };
-
-    private static void ReadFlow(List<Binding> rows)
-    {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FlowLauncher", "Settings", "Settings.json");
-        if (!File.Exists(path)) return;
-        try
-        {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
-            var root = doc.RootElement;
-            if (root.TryGetProperty("Hotkey", out var hk) && hk.ValueKind == JsonValueKind.String && hk.GetString()!.Length > 0)
-                rows.Add(new Binding(hk.GetString()!, "Flow Launcher", "Buscar apps, arquivos e contas", ""));
-            if (root.TryGetProperty("CustomPluginHotkeys", out var list) && list.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var h in list.EnumerateArray())
-                {
-                    var q = (h.TryGetProperty("ActionKeyword", out var a) ? a.GetString() ?? "" : "").Trim();
-                    var keys = h.TryGetProperty("Hotkey", out var k) ? k.GetString() ?? "" : "";
-                    rows.Add(new Binding(keys, "Flow Launcher", FlowDesc.TryGetValue(q, out var d) ? d : $"Flow: {q}", ""));
-                }
-            }
-        }
-        catch { /* a Flow settings file in the middle of a write */ }
     }
 
     private static readonly Dictionary<char, string> AhkMods = new() { ['!'] = "Alt", ['+'] = "Shift", ['^'] = "Ctrl", ['#'] = "Win" };
