@@ -95,6 +95,11 @@
             <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.5" Color="Black" />
         </Border.Effect>
         <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid Grid.Column="0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -115,7 +120,22 @@
 
             <ListBox x:Name="List" Grid.Row="2" Background="Transparent" BorderThickness="0" Margin="0,6,0,8"
                      MaxHeight="420" Focusable="False" ItemContainerStyle="{StaticResource RowStyle}"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" MouseLeftButtonUp="List_MouseLeftButtonUp" />
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Hidden" MouseLeftButtonUp="List_MouseLeftButtonUp"
+                     SelectionChanged="List_SelectionChanged" />
+            </Grid>
+
+            <!-- the image of the selected row, when it has one (the backgrounds list) -->
+            <Border x:Name="PreviewPane" Grid.Column="1" Width="400" Visibility="Collapsed"
+                    BorderBrush="{DynamicResource Line}" BorderThickness="1,0,0,0">
+                <StackPanel Margin="18,18,18,16" VerticalAlignment="Top">
+                    <Border x:Name="PreviewSurface" Height="202" CornerRadius="8" Background="{DynamicResource Hover}">
+                        <TextBlock x:Name="PreviewHint" Text="" FontSize="13" Foreground="{DynamicResource Muted}"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock x:Name="PreviewTitle" Margin="2,12,2,0" FontSize="15" Foreground="{DynamicResource Fg}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="PreviewInfo" Margin="2,2,2,0" FontSize="12" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+            </Border>
         </Grid>
     </Border>
 </Window>

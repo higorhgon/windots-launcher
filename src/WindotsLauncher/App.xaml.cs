@@ -57,6 +57,16 @@ public partial class App : Application
             File.WriteAllLines(file, rows.Select(r => $"{r.Label}	{r.Description}	{r.Right}	{(r.NeedsConfirm ? "confirm" : "-")}	{(r.Run != null || r.Item?.IsAction == true ? "run" : "-")}{(r.RunAlt != null ? "+alt" : "")}"));
             return;
         }
+        if (route.StartsWith("bgdownload:", StringComparison.OrdinalIgnoreCase))   // downloads a theme's backgrounds, for tests
+        {
+            var theme = route[11..];
+            var log = new List<string>();
+            // on the thread pool: waiting for an async method on the UI thread would deadlock on its own context
+            try { Task.Run(() => Backgrounds.Wallpaper.DownloadAsync(theme, (d, t) => log.Add($"{d}/{t}"))).GetAwaiter().GetResult(); log.Add("done"); }
+            catch (Exception ex) { log.Add("FAILED: " + ex.Message); }
+            File.WriteAllLines(file, log);
+            return;
+        }
         if (route.StartsWith("files:", StringComparison.OrdinalIgnoreCase))   // the file index, for tests
         {
             var hits = Search.Files.Search(route[6..].Split(' ', StringSplitOptions.RemoveEmptyEntries), 25, CancellationToken.None);

@@ -29,6 +29,10 @@ public partial class LauncherWindow : Window
         Activated += (_, _) => { _activated = true; Windots.Trace($"Activated visible={IsVisible}"); };
         Deactivated += (_, _) => { Windots.Trace($"Deactivated activated={_activated} visible={IsVisible}"); if (_activated && IsVisible) Hide(); };
         PreviewKeyDown += OnPreviewKeyDown;
+        Backgrounds.Wallpaper.Changed += () => Dispatcher.InvokeAsync(() =>
+        {
+            if (IsVisible && _current is { Provider: "backgrounds" }) Open(_current.Id);   // the new images
+        });
         // created hidden: the first Summon only has to show it
         new WindowInteropHelper(this).EnsureHandle();
     }
@@ -169,14 +173,63 @@ public partial class LauncherWindow : Window
         Show(rows);
     }
 
+    private const double NarrowWidth = 672, WidePreviewWidth = 1092;
+
     private void Show(IEnumerable<Row> rows)
     {
         _view.Clear();
         foreach (var r in rows) _view.Add(r);
+        // a list whose rows have an image gets the preview pane: the window is wider only then, and stays centered
+        var wide = _view.Any(r => r.PreviewPath != null);
+        if (wide != (Width > NarrowWidth + 1))
+        {
+            Width = wide ? WidePreviewWidth : NarrowWidth;
+            PreviewPane.Visibility = wide ? Visibility.Visible : Visibility.Collapsed;
+            if (IsVisible) Place();
+        }
         List.Visibility = _view.Count > 0 ? Visibility.Visible : Visibility.Collapsed;   // no rows: only the bar
-        List.SelectedIndex = _view.Count > 0 ? 0 : -1;
-        if (_view.Count > 0) List.ScrollIntoView(_view[0]);
+        List.SelectedIndex = _view.Count > 0 ? PreferredIndex() : -1;
+        if (_view.Count > 0) List.ScrollIntoView(_view[List.SelectedIndex]);
         LoadIcons();
+    }
+
+    /// <summary>In a list of images, start on the one that is the background now.</summary>
+    private int PreferredIndex()
+    {
+        var i = _view.ToList().FindIndex(r => r.PreviewPath != null && r.Checked);
+        return i >= 0 ? i : 0;
+    }
+
+    // ------------------------------------------------------------------ the preview pane
+
+    private CancellationTokenSource? _previewCts;
+
+    private void List_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e) => UpdatePreview();
+
+    private void UpdatePreview()
+    {
+        _previewCts?.Cancel();
+        if (List.SelectedItem is not Row { PreviewPath: { } path } row) return;
+        PreviewTitle.Text = row.Label;
+        PreviewInfo.Text = row.PreviewNote;
+        PreviewSurface.Background = (Brush)Application.Current.Resources["Hover"];
+        PreviewHint.Text = "Loading...";
+        var cts = _previewCts = new CancellationTokenSource();
+        _ = Task.Run(() =>
+        {
+            try { return Backgrounds.Wallpaper.LoadPreview(path); } catch { return default((System.Windows.Media.Imaging.BitmapSource image, int width, int height)?); }
+        }).ContinueWith(t =>
+        {
+            if (cts.IsCancellationRequested) return;
+            Dispatcher.InvokeAsync(() =>
+            {
+                if (cts.IsCancellationRequested) return;
+                if (t.Result is not { } p) { PreviewHint.Text = "No preview"; return; }
+                PreviewHint.Text = "";
+                PreviewSurface.Background = new ImageBrush(p.image) { Stretch = Stretch.UniformToFill };
+                PreviewInfo.Text = (p.width > 0 ? $"{p.width} x {p.height}   \u00b7   " : "") + row.PreviewNote;
+            });
+        });
     }
 
     /// <summary>`f name`: the Windows Search index is asked on a worker thread, after a short pause so typing is not a query per key.</summary>
@@ -236,7 +289,7 @@ public partial class LauncherWindow : Window
             return;
         }
         if (row.NeedsConfirm && !row.Confirming) { row.Confirming = true; return; }
-        Hide();
+        if (!row.KeepOpen) Hide();
         if (alt && row.RunAlt != null) row.RunAlt(); else row.Run?.Invoke();
     }
 

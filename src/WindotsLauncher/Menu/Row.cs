@@ -17,6 +17,13 @@ public sealed class Row : INotifyPropertyChanged
         get => _confirming ? $"Confirm: {_label}?" : _label;
         init => _label = value;
     }
+
+    /// <summary>Changes the title of a row that is on screen (a download's progress).</summary>
+    public void Relabel(string text)
+    {
+        _label = text;
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label)));
+    }
     public string Description { get; init; } = "";
     /// <summary>Text on the right: key chords, a theme's mode...</summary>
     public string Right { get; init; } = "";
@@ -31,6 +38,12 @@ public sealed class Row : INotifyPropertyChanged
     /// <summary>What Alt+Enter does for a row that is not a menu item (the shell row runs without a window).</summary>
     public Action? RunAlt { get; init; }
     public bool NeedsConfirm { get; init; }
+    /// <summary>An image shown in the preview pane on the right while this row is selected.</summary>
+    public string? PreviewPath { get; init; }
+    /// <summary>Enter runs the action but leaves the window open (a download shows its progress in the row).</summary>
+    public bool KeepOpen { get; init; }
+    /// <summary>A line under the preview (the size in pixels is added to it).</summary>
+    public string PreviewNote { get; init; } = "";
 
     public bool Confirming
     {

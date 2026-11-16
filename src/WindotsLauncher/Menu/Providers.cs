@@ -17,6 +17,7 @@ public static class Providers
     {
         "themes" => new ThemesProvider(),
         "keybindings" => new KeybindingsProvider(),
+        "backgrounds" => new BackgroundsProvider(),
         _ => null,
     };
 }
@@ -145,5 +146,76 @@ public sealed class KeybindingsProvider : IProvider
             if (rows.Any(r => r.Keys == keys)) continue;   // Win listed twice (LWin / RWin)
             rows.Add(new Binding(keys, "AutoHotkey", desc, ""));
         }
+    }
+}
+
+
+/// <summary>
+/// The backgrounds of the current theme, each with a preview on the right; Enter sets it as the desktop background.
+/// A theme whose images were not downloaded yet ends with a row that fetches them from omarchy.
+/// </summary>
+public sealed class BackgroundsProvider : IProvider
+{
+    private static readonly HashSet<string> Downloading = new();
+
+    public IEnumerable<Row> Rows()
+    {
+        var theme = Windots.CurrentTheme();
+        var current = Backgrounds.Wallpaper.CurrentSource();
+        var images = Backgrounds.Wallpaper.List(theme);
+        foreach (var img in images)
+        {
+            var path = img.Path;
+            yield return new Row
+            {
+                Icon = "\uf03e",
+                Label = img.Name,
+                Description = img.Origin,
+                Right = img.Bytes >= 1024 * 1024 ? $"{img.Bytes / 1024.0 / 1024.0:0.0} MB" : $"{Math.Max(1, img.Bytes / 1024)} KB",
+                Checked = string.Equals(path, current, StringComparison.OrdinalIgnoreCase),
+                PreviewPath = path,
+                PreviewNote = img.Origin,
+                SearchText = $"{img.Name} {Path.GetFileName(path)}",
+                Run = () => _ = Backgrounds.Wallpaper.ApplyAsync(path),
+            };
+        }
+        if (!Backgrounds.Wallpaper.IsDownloaded(theme))
+        {
+            Row? self = null;
+            self = new Row
+            {
+                Icon = "\uf019",
+                Label = Downloading.Contains(theme) ? "Downloading..." : $"Download the {Windots.Title(theme)} backgrounds from omarchy",
+                Description = images.Count == 0 ? "no images for this theme yet" : "more images for this theme",
+                KeepOpen = true,
+                SearchText = "download omarchy backgrounds",
+                Run = () => Download(theme, self!),
+            };
+            yield return self;
+        }
+        else if (images.Count == 0)
+        {
+            yield return new Row { Icon = "\uf03e", Label = "This theme has no backgrounds", Description = "put images in ~\\.config\\windots\\backgrounds\\" + theme };
+        }
+    }
+
+    private static void Download(string theme, Row row)
+    {
+        if (!Downloading.Add(theme)) return;
+        var ui = System.Windows.Application.Current.Dispatcher;
+        row.Relabel("Downloading...");
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Backgrounds.Wallpaper.DownloadAsync(theme, (done, total) => ui.InvokeAsync(() => row.Relabel($"Downloading {done}/{total}...")));
+                ui.Invoke(() => { Downloading.Remove(theme); Backgrounds.Wallpaper.RaiseChanged(); });
+            }
+            catch (Exception ex)
+            {
+                Windots.Trace($"background download {theme}: {ex.Message}");
+                ui.Invoke(() => { Downloading.Remove(theme); row.Relabel("Download failed (offline?): Enter tries again"); });
+            }
+        });
     }
 }

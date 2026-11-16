@@ -28,13 +28,14 @@
   "style": { "icon": "\uf1fc", "label": "Style", "description": "Theme, font, background" },
   "style.theme": { "icon": "\uf1fc", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
   "style.font": { "icon": "\uf031", "label": "Font", "action": "windots-install-font", "aliases": ["font", "fonts"] },
-  "style.background": { "icon": "\uf03e", "label": "Background", "action": "start ms-settings:personalization-background" },
+  "style.background": { "icon": "\uf03e", "label": "Background", "provider": "backgrounds", "aliases": ["background", "backgrounds", "wallpaper"], "description": "Images of the current theme" },
   "style.darkmode": { "icon": "\uf186", "label": "Dark / light mode", "action": "windots-toggle-dark-mode" },
 
   "keybindings": { "icon": "\uf11c", "label": "Keybindings", "provider": "keybindings", "aliases": ["keys"], "description": "Every hotkey" },
 
   "windows": { "icon": "\uf17a", "label": "Settings", "searchTerms": ["windows settings", "configuracoes", "configurações"] },
   "windows.settings": { "icon": "\uf013", "label": "All settings", "action": "start ms-settings:", "searchTerms": ["configuracoes", "preferences"] },
+  "windows.background": { "icon": "\uf03e", "label": "Background settings", "action": "start ms-settings:personalization-background" },
   "windows.sound": { "icon": "\uf028", "label": "Sound", "action": "start ms-settings:sound" },
   "windows.bluetooth": { "icon": "\uf293", "label": "Bluetooth", "action": "start ms-settings:bluetooth" },
   "windows.network": { "icon": "\uf1eb", "label": "Network", "action": "start ms-settings:network" },
