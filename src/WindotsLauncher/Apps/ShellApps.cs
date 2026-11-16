@@ -131,7 +131,13 @@ public static class ShellApps
             {
                 if (GetObject(hbm, Marshal.SizeOf<BITMAP>(), out var bm) == 0 || bm.bmBits == IntPtr.Zero || bm.bmBitsPixel != 32) return null;
                 // a 32-bit DIB section: its pixels are premultiplied BGRA, which keeps the transparency
-                var src = BitmapSource.Create(bm.bmWidth, bm.bmHeight, 96, 96, PixelFormats.Pbgra32, null, bm.bmBits, bm.bmWidthBytes * bm.bmHeight, bm.bmWidthBytes);
+                // GetImage hands back a bottom-up DIB (the first row in memory is the bottom one) and BitmapSource reads top-down:
+                // copy the rows in reverse, or the icon comes out upside down
+                var stride = bm.bmWidthBytes;
+                var pixels = new byte[stride * bm.bmHeight];
+                for (var y = 0; y < bm.bmHeight; y++)
+                    Marshal.Copy(bm.bmBits + (bm.bmHeight - 1 - y) * stride, pixels, y * stride, stride);
+                var src = BitmapSource.Create(bm.bmWidth, bm.bmHeight, 96, 96, PixelFormats.Pbgra32, null, pixels, stride);
                 src.Freeze();
                 return src;
             }
