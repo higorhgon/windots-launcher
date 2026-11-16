@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows;
@@ -173,6 +174,19 @@ public static class SearchEngine
 
     private static List<Row> ShellRows(string command)
     {
+        // what the Windows Run dialog opens: a folder, a file, shell:startup, %TEMP%, a URL, an app (ShellExecute)
+        if (RunTarget(command) is { } target)
+            return new List<Row>
+            {
+                new()
+                {
+                    Icon = "",
+                    Label = $"Open: {command}",
+                    Description = "Enter: open it, like Win+R   ·   Shift+Enter: run in PowerShell, in a terminal",
+                    Run = () => OpenTarget(target.file, target.args),
+                    RunAlt = () => RunInTerminal(command),
+                },
+            };
         if (command.Length == 0)
             return new List<Row> { new() { Icon = "", Label = "Type a command after >", Description = "Run in PowerShell: Enter opens a terminal, Shift+Enter runs it without a window" } };
         return new List<Row>
@@ -186,6 +200,59 @@ public static class SearchEngine
                 RunAlt = () => Windots.Run(command),
             },
         };
+    }
+
+    /// <summary>The file and arguments the Run dialog would open for this text, or null when it is a PowerShell command.</summary>
+    internal static (string file, string args)? RunTarget(string text)
+    {
+        text = Environment.ExpandEnvironmentVariables(text.Trim());
+        if (text.Length == 0) return null;
+        if (Directory.Exists(text) || File.Exists(text)) return (text, "");
+        string first, rest;
+        if (text[0] == '"')
+        {
+            var end = text.IndexOf('"', 1);
+            if (end < 0) return null;
+            first = text[1..end]; rest = text[(end + 1)..].Trim();
+        }
+        else
+        {
+            var sp = text.IndexOf(' ');
+            first = sp < 0 ? text : text[..sp]; rest = sp < 0 ? "" : text[(sp + 1)..].Trim();
+        }
+        if (Directory.Exists(first) || File.Exists(first)) return (first, rest);
+        // shell:startup, ms-settings:, https://... (not a drive letter such as "C:")
+        var colon = first.IndexOf(':');
+        if (colon > 1 && Regex.IsMatch(first[..colon], "^[A-Za-z][A-Za-z0-9+.-]*$")) return (first, rest);
+        return OnPathOrAppPaths(first) ? (first, rest) : null;
+    }
+
+    private static bool OnPathOrAppPaths(string name)
+    {
+        if (name.IndexOfAny(new[] { '\\', '/' }) >= 0) return false;
+        var exts = Path.HasExtension(name) ? new[] { "" } : new[] { ".exe", ".com", ".bat", ".cmd", ".msc", ".cpl" };
+        foreach (var dir in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';', StringSplitOptions.RemoveEmptyEntries))
+            foreach (var e in exts)
+            {
+                try { if (File.Exists(Path.Combine(dir.Trim('"'), name + e))) return true; } catch { }
+            }
+        foreach (var hive in new[] { Microsoft.Win32.Registry.CurrentUser, Microsoft.Win32.Registry.LocalMachine })
+            foreach (var e in exts)
+            {
+                try
+                {
+                    using var k = hive.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\" + name + e);
+                    if (k != null) return true;
+                }
+                catch { }
+            }
+        return false;
+    }
+
+    private static void OpenTarget(string file, string args)
+    {
+        try { Process.Start(new ProcessStartInfo(file, args) { UseShellExecute = true }); }
+        catch (Exception ex) { Debug.WriteLine($"open failed: {ex.Message}"); }
     }
 
     /// <summary>A Windows Terminal window with PowerShell running the command and staying open.</summary>
