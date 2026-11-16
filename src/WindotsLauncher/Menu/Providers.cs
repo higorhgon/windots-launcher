@@ -87,7 +87,7 @@ public sealed class KeybindingsProvider : IProvider
             var run = b.Run;
             yield return new Row
             {
-                Icon = "",
+                Icon = "",
                 Label = b.Desc,
                 Description = b.Section,
                 Right = b.Keys,

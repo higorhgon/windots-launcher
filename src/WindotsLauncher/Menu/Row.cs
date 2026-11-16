@@ -54,6 +54,7 @@ public sealed class Row : INotifyPropertyChanged
     public bool ShowGlyph => _iconImage == null;
     public AppEntry? App { get; init; }
 
+    public bool HasIcon => Icon.Length > 0 || _iconImage != null;
     public bool HasRight => Right.Length > 0;
     public bool HasSwatches => Swatches.Count > 0;
     public bool HasDescription => Description.Length > 0;
