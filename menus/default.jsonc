@@ -1,0 +1,55 @@
+{
+  // The windots menu, in the format of omarchy's omarchy-menu.jsonc (omacom/omarchy,
+  // config/omarchy/extensions/omarchy-menu.jsonc).
+  //
+  // IDs are object keys. The parent is the id without its last dotted part, so "style.theme" is
+  // inside "style" and "style" is on the root menu. Reusing an id (here or in
+  // ~\.config\windots\menu.jsonc) overrides the fields it sets.
+  //
+  // Fields:
+  //   icon         Nerd Font glyph (use \uXXXX) shown in the icon column.
+  //   label        Visible row title.   title: heading of the menu (defaults to label).
+  //   action       PowerShell command to run (through pwsh, like whkd). No action: it is a submenu.
+  //   target       Id of an existing menu to open (a link).
+  //   provider     Runtime rows: "themes" or "keybindings".
+  //   aliases      Other routes for `windots-launcher summon <route>`; also searchable.
+  //   description  Subtitle and extra search text.
+  //   when         cmd.exe command; the row is hidden when its exit code is not 0.
+  //   checked      cmd.exe command; a check mark when its exit code is 0.
+  //   alt          Id of another entry that Alt+Enter runs instead.
+  //   confirm      windots addition: the first Enter asks, the second one runs.
+
+  "root": { "label": "Go" },
+
+  "style": { "icon": "", "label": "Style", "description": "Theme, font, background" },
+  "style.theme": { "icon": "", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
+  "style.font": { "icon": "", "label": "Font", "action": "windots-install-font", "aliases": ["font", "fonts"] },
+  "style.background": { "icon": "", "label": "Background", "action": "start ms-settings:personalization-background" },
+  "style.darkmode": { "icon": "", "label": "Dark / light mode", "action": "windots-toggle-dark-mode" },
+
+  "keybindings": { "icon": "", "label": "Keybindings", "provider": "keybindings", "aliases": ["keys"], "description": "Every hotkey" },
+
+  "windows": { "icon": "", "label": "Windows settings" },
+  "windows.sound": { "icon": "", "label": "Sound", "action": "start ms-settings:sound" },
+  "windows.bluetooth": { "icon": "", "label": "Bluetooth", "action": "start ms-settings:bluetooth" },
+  "windows.network": { "icon": "", "label": "Network", "action": "start ms-settings:network" },
+  "windows.display": { "icon": "", "label": "Display", "action": "start ms-settings:display" },
+  "windows.power": { "icon": "", "label": "Power and sleep", "action": "start ms-settings:powersleep" },
+
+  "setup": { "icon": "", "label": "Setup", "description": "Update, restart apps" },
+  "setup.update": { "icon": "", "label": "Update windots", "action": "windots-launch-or-focus-tui --float --title=update pwsh -NoProfile -Command 'windots update; Read-Host Enter' " },
+  "setup.restart": { "icon": "", "label": "Restart an app" },
+  "setup.restart.whkd": { "icon": "", "label": "whkd (hotkeys)", "action": "windots-restart-whkd" },
+  "setup.restart.masir": { "icon": "", "label": "masir (focus follows mouse)", "action": "windots-restart-masir" },
+  "setup.restart.switcher": { "icon": "", "label": "komorebi-switcher", "action": "windots-restart-komorebi-switcher" },
+  "setup.restart.explorer": { "icon": "", "label": "Explorer (taskbar)", "action": "windots-restart-explorer", "confirm": true },
+  "setup.restart.flow": { "icon": "", "label": "Flow Launcher", "action": "windots-restart-flow-launcher" },
+  "setup.restart.hotkeys": { "icon": "", "label": "AutoHotkey script", "action": "windots-restart-hotkeys" },
+
+  "system": { "icon": "", "label": "System" },
+  "system.lock": { "icon": "", "label": "Lock", "action": "rundll32.exe user32.dll,LockWorkStation" },
+  "system.sleep": { "icon": "", "label": "Sleep", "action": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0" },
+  "system.logout": { "icon": "", "label": "Log out", "action": "shutdown /l", "confirm": true },
+  "system.restart": { "icon": "", "label": "Restart", "action": "shutdown /r /t 0", "confirm": true },
+  "system.shutdown": { "icon": "", "label": "Shut down", "action": "shutdown /s /t 0", "confirm": true }
+}
