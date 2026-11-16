@@ -34,6 +34,7 @@ Abrir:
 | Como | O que abre |
 |---|---|
 | `Win+Space` | menu raiz (liga/desliga) |
+| `Alt+Space` | o lançador: só a barra de busca até você digitar (apps, contas, `> comando`, `kill`, comandos, temas) |
 | `Alt+K` | atalhos de teclado (era o fzf) |
 | `Alt+Ctrl+Shift+Space` | temas (era o fzf) |
 | `windots menu [verbo] [rota]` | qualquer rota: `windots menu summon style.theme` |
@@ -49,6 +50,9 @@ mandar o pedido custa um processo .NET inteiro (~300 ms), então o AutoHotkey es
 com `SetForegroundWindow`; se o Windows recusar, a janela compartilha a fila de entrada da janela em primeiro
 plano e pede de novo (o Windows só dá foco a quem recebeu a última entrada). `WINDOTS_LAUNCHER_TRACE=<arquivo>`
 grava um log de diagnóstico.
+
+O lançador é a rota `launcher` (apelidos `apps` e `run`): procura as mesmas coisas que o menu raiz, mas não lista o menu
+enquanto o campo está vazio e a janela é só a barra, como o Flow Launcher e o PowerToys Run.
 
 Verbos (como o `omarchy menu`): `toggle [rota]` (padrão), `summon [rota]`, `close`, `refresh`, `quit`. Uma
 rota é o id de um menu (`style.theme`) ou um apelido (`theme`, `keys`).

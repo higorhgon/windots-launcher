@@ -21,6 +21,10 @@
 
   "root": { "label": "Go" },
 
+  // `windots-launcher summon launcher` (Alt+Space): a bare search bar that searches apps, commands, themes, calculations,
+  // `> shell` and `kill`. Not a row of the root menu (parent ""), only a route.
+  "launcher": { "label": "Launcher", "parent": "", "aliases": ["apps", "run"] },
+
   "style": { "icon": "\uf1fc", "label": "Style", "description": "Theme, font, background" },
   "style.theme": { "icon": "\uf1fc", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
   "style.font": { "icon": "\uf031", "label": "Font", "action": "windots-install-font", "aliases": ["font", "fonts"] },

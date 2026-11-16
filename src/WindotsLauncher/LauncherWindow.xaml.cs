@@ -18,6 +18,8 @@ public partial class LauncherWindow : Window
     private MenuModel _model = new();
     private MenuItem? _current;
     private bool _activated;
+    /// <summary>The "launcher" route: like the root menu, but a bare search bar until you type (Flow Launcher, PowerToys Run).</summary>
+    private bool _launcherMode;
 
     public LauncherWindow()
     {
@@ -75,7 +77,7 @@ public partial class LauncherWindow : Window
             ShowActivated = false;
             Native.SetWindowPos(hwnd, Native.HWND_TOPMOST, -32000, -32000, 0, 0, Native.SWP_NOSIZE | Native.SWP_NOACTIVATE);
             Show();
-            foreach (var route in new[] { "root", "style.theme", "keybindings", "root" })
+            foreach (var route in new[] { "launcher", "root", "style.theme", "keybindings", "root" })
             {
                 Open(route);
                 Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
@@ -127,7 +129,9 @@ public partial class LauncherWindow : Window
         var item = _model.Resolve(id) ?? _model.Resolve("root");
         if (item == null) return;
         _current = item;
-        _all = BuildRows(item);
+        _launcherMode = item.Id.Equals("launcher", StringComparison.OrdinalIgnoreCase);
+        // the launcher searches the same things as the root menu; it just does not list the menu while the box is empty
+        _all = BuildRows(_launcherMode ? _model.Resolve("root") ?? item : item);
         Filter.Text = "";
         ApplyFilter();
     }
@@ -143,9 +147,11 @@ public partial class LauncherWindow : Window
         var text = Filter.Text;
         Hint.Visibility = text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         foreach (var r in _all) r.Confirming = false;
-        var rows = SearchEngine.Query(_model, _current, _all, text);
+        var searchFrom = _launcherMode ? _model.Resolve("root") : _current;
+        var rows = _launcherMode && text.Trim().Length == 0 ? new List<Row>() : SearchEngine.Query(_model, searchFrom, _all, text);
         _view.Clear();
         foreach (var r in rows) _view.Add(r);
+        List.Visibility = _view.Count > 0 ? Visibility.Visible : Visibility.Collapsed;   // no rows: only the bar
         List.SelectedIndex = _view.Count > 0 ? 0 : -1;
         if (_view.Count > 0) List.ScrollIntoView(_view[0]);
         LoadIcons();
