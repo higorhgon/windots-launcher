@@ -9,6 +9,8 @@ namespace WindotsLauncher;
 public static class Windots
 {
     public static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    public static string LocalAppData => Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    public static string RoamingAppData => Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
     /// <summary>The windots repository: WINDOTS_HOME, else ~\windots.</summary>
     public static string Repo

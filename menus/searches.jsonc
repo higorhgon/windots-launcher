@@ -1,0 +1,13 @@
+{
+  // Web searches: type the keyword, a space and what to look for (`g cats`, `yt lofi`).
+  // {q} is replaced by the text, URL-encoded. The engine marked "default" is the one of the last row of
+  // every search ("Search Google for ..."). ~\.config\windots\searches.jsonc adds engines or overrides these
+  // by keyword (and can mark another one as "default").
+  "g": { "label": "Google", "url": "https://www.google.com/search?q={q}", "default": true },
+  "ddg": { "label": "DuckDuckGo", "url": "https://duckduckgo.com/?q={q}" },
+  "yt": { "label": "YouTube", "url": "https://www.youtube.com/results?search_query={q}" },
+  "gh": { "label": "GitHub", "url": "https://github.com/search?q={q}" },
+  "w": { "label": "Wikipedia", "url": "https://pt.wikipedia.org/wiki/Special:Search?search={q}" },
+  "maps": { "label": "Google Maps", "url": "https://www.google.com/maps/search/{q}" },
+  "tr": { "label": "Google Translate", "url": "https://translate.google.com/?sl=auto&tl=pt&text={q}" }
+}

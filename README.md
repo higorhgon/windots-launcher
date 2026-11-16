@@ -3,8 +3,8 @@
 Lançador e menu de comandos do [windots](https://github.com/higorhgon/windots), feito em WPF (.NET 9) para
 Windows 11. O objetivo é funcionar como o menu do omarchy e como lançador de apps e arquivos (ele substituiu o Flow Launcher).
 
-> Estado: **fases 1 a 3 prontas** (motor, menu do omarchy, temas, atalhos de teclado, apps, calculadora, shell,
-> processos e comandos do sistema). Arquivos, favoritos do navegador, URLs e busca na web vêm na próxima fase.
+> Estado: **fases 1 a 4 prontas** (motor, menu do omarchy, temas, atalhos de teclado, apps, calculadora, shell,
+> processos, comandos do sistema, arquivos, favoritos, URLs e busca na web).
 
 ## O que ele é
 
@@ -15,8 +15,8 @@ Windows 11. O objetivo é funcionar como o menu do omarchy e como lançador de a
   `alt`, além de rotas e voltar um nível. Uma adição do windots: `confirm` (o primeiro Enter pergunta, o
   segundo executa), para reiniciar, desligar e afins.
 - **Lançador de apps e arquivos**, no lugar do Flow Launcher (que tinha Program, Explorer, Calculator, Shell, Sys,
-  ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Já existem apps, calculadora, shell, processos e
-  sistema; faltam arquivos, favoritos, URLs e busca na web.
+  ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Tem apps, arquivos, favoritos, URLs, busca
+  na web, calculadora, shell, processos e sistema.
 - **Visual do PowerToys Run** (caixa de busca arredondada, lista com ícones, seleção na cor de destaque),
   pintado pela paleta do tema atual do windots (`~\.local\state\windots\theme.name`, paletas em
   `windots\default\themes`, as mesmas do omarchy).
@@ -104,6 +104,30 @@ O menu System tem Lock, Sleep, Hibernate, Log out, Restart, Shut down, Task Mana
 com termos de busca em inglês e português (`searchTerms`).
 `windots-launcher.exe dump q:<texto> <arquivo>` grava o que uma busca no menu raiz listaria, sem janela.
 
+## Arquivos, favoritos, URLs e busca na web
+
+No menu raiz e no lançador:
+
+- **Endereço da web** (`youtube.com`, `www.exemplo.com/pagina`, `https://...`, `localhost:3000`, um IP com porta): uma
+  linha "Open in the browser" no topo. `notes.txt` ou `main.rs` não viram endereço (só valem os domínios que não são
+  também extensões de arquivo, ou o `www.`).
+- **Busca na web**: `g gatos`, `yt lofi`, `gh windots`, `w einstein`, `maps pizza`, `ddg`, `tr`. As palavras-chave
+  ficam em `menus/searches.jsonc` (`{q}` é o texto, já codificado) e `~\.config\windots\searches.jsonc` acrescenta
+  ou troca por palavra-chave; o motor marcado `"default"` é o da última linha de toda busca ("Search Google for ...").
+- **Favoritos**: os do Chrome, Edge, Brave e Vivaldi (JSON, um por perfil) e os do Firefox, Zen e LibreWolf
+  (`places.sqlite`, lido numa cópia, com o `-wal`, porque o navegador mantém o arquivo aberto). Até 5 aparecem
+  na busca geral, depois dos apps, com o navegador de origem à direita. A lista é lida em segundo plano e de novo
+  quando um arquivo de favoritos muda (nesta máquina: 232 favoritos, Chrome, Edge e Zen).
+- **`f nome`** (ou `file nome`): procura arquivos e pastas no índice do Windows Search (o mesmo do Menu Iniciar e do
+  Explorador), com o ícone do Windows, a pasta e a data. Enter abre, `Shift+Enter` mostra no Explorador. Só acha o
+  que o Windows indexa (por padrão as pastas do usuário); fica de fora o que é do AppData, de outros usuários do
+  Windows, `node_modules`, `.git` e os caches de pacotes (`.nuget`, `.cargo`, `go\pkg\mod`...), que enterrariam o
+  que você mesmo fez. A consulta roda fora da janela, 150 ms depois da última tecla.
+- **Caminho** (`C:\Windows\Sys`, `~\Docu`, `\\servidor`): lista a pasta, filtrando pelo que vem depois da última
+  barra. Tab completa com a linha escolhida (entra na pasta), Enter abre, `Shift+Enter` mostra no Explorador.
+
+`windots-launcher.exe dump files:<texto> <arquivo>` e `dump bookmarks:<texto> <arquivo>` gravam esses resultados sem janela.
+
 ## O menu
 
 `menus/default.jsonc` é o menu padrão (Style, Keybindings, Windows settings, Setup, System). Para uma máquina
@@ -122,7 +146,7 @@ campos citados sobrescritos (como a extensão do omarchy). Comentários e vírgu
    temas e atalhos de teclado.
 2. **Pronta.** Apps: Menu Iniciar e apps da Store, ícones, ranking por uso.
 3. **Pronta.** Sistema (`sys`), calculadora, comandos (Shell) e processos.
-4. Arquivos, favoritos do navegador, URLs e busca na web.
+4. **Pronta.** Arquivos, favoritos do navegador, URLs e busca na web.
 
 O Flow Launcher já foi desinstalado e saiu do windots (pacote, atalho de inicialização e configuração).
 
@@ -137,8 +161,9 @@ Um launcher aberto trava o executável: `windots-launcher.exe quit` antes de com
 
 Não testado ainda: segundo monitor e escala de tela diferente de 100%, tema claro, a ação `Update windots`
 do menu Setup, o `Shift+Enter` de um item do menu com `alt`, o `> comando` com Enter (abre o Windows Terminal), o
-encerrar de um programa com permissão de administrador, o início automático no login e apps que a lista do
-Windows mostra duas vezes com ids diferentes.
+encerrar de um programa com permissão de administrador, Enter em um favorito, em uma busca na web e em um
+arquivo ou pasta (abrir de fato), o Tab de caminho na janela (a lista do caminho foi conferida, o Tab não), o
+início automático no login e apps que a lista do Windows mostra duas vezes com ids diferentes.
 
 ## Referências
 

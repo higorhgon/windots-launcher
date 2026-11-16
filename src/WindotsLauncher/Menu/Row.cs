@@ -53,6 +53,10 @@ public sealed class Row : INotifyPropertyChanged
     public bool ShowImage => _iconImage != null;
     public bool ShowGlyph => _iconImage == null;
     public AppEntry? App { get; init; }
+    /// <summary>A file or folder whose shell icon this row shows (loaded after the row appears).</summary>
+    public string? IconPath { get; init; }
+    /// <summary>What Tab puts in the search box (a path, to go into a folder); empty: Tab does nothing.</summary>
+    public string Completion { get; init; } = "";
 
     public bool HasIcon => Icon.Length > 0 || _iconImage != null;
     public bool HasRight => Right.Length > 0;

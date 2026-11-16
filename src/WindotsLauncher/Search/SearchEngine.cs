@@ -26,6 +26,9 @@ public static class SearchEngine
         if (atRoot && Regex.Match(raw, @"^kill(?:\s+(.*))?$", RegexOptions.IgnoreCase) is { Success: true } km)
             return ProcessRows(km.Groups[1].Value.Trim());
 
+        if (atRoot && FileQuery(raw) != null) return new List<Row>();   // `f name`: the window runs it on a worker thread
+        if (atRoot && Files.LooksLikePath(raw)) return Files.PathRows(raw);
+
         var tokens = raw.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(t => t.ToLowerInvariant()).ToArray();
         if (tokens.Length == 0) return levelRows.ToList();
 
@@ -47,14 +50,45 @@ public static class SearchEngine
         {
             AddMatching(LeafRows(model), -0.2);
             if (Calculator.TryEvaluate(raw) is { } value) scored.Add((CalcRow(raw.Trim(), value), -100));
+            if (Web.TryUrl(raw) is { } url) scored.Add((Web.UrlRow(url), -90));
+            if (Web.KeywordSearch(raw) is { } keyword) scored.Add((keyword, -80));
+            var marks = new List<(Row row, double score)>();
+            foreach (var b in Bookmarks.All)
+            {
+                var title = b.Title.ToLowerInvariant();
+                var hay = title + " " + b.Url.ToLowerInvariant();
+                if (!tokens.All(hay.Contains)) continue;
+                marks.Add((BookmarkRow(b), (title.StartsWith(tokens[0]) ? 0 : title.Contains(tokens[0]) ? 1 : 2) + 0.6));   // after apps that match as well
+            }
+            scored.AddRange(marks.OrderBy(m => m.score).Take(5));
             foreach (var a in ShellApps.Apps)
             {
                 var s = Matcher.Score(tokens, a);
                 if (s != null) scored.Add((AppRow(a), s.Value));
             }
         }
-        return scored.OrderBy(x => x.score).Select(x => x.row).Take(MaxRows).ToList();
+        var result = scored.OrderBy(x => x.score).Select(x => x.row).Take(MaxRows).ToList();
+        // the last row of any search at the root: look the text up on the web (not when it already is a search or an address)
+        if (atRoot && Web.TryUrl(raw) == null && Web.KeywordSearch(raw) == null && Web.FallbackSearch(raw) is { } fallback) result.Add(fallback);
+        return result;
     }
+
+    /// <summary>`f name` (or `file name`): the words to look for in the file index, or null when the text is not that.</summary>
+    public static string[]? FileQuery(string raw)
+    {
+        var m = Regex.Match(raw.TrimStart(), @"^(?:f|file|files)\s+(.+)$", RegexOptions.IgnoreCase);
+        return m.Success ? m.Groups[1].Value.Split(' ', StringSplitOptions.RemoveEmptyEntries) : null;
+    }
+
+    private static Row BookmarkRow(Bookmark b) => new()
+    {
+        Icon = "\uf02e",
+        Label = b.Title,
+        Description = Regex.Replace(b.Url, @"^https?://(www\.)?", ""),
+        Right = b.Source,
+        SearchText = b.Url,
+        Run = () => Web.Open(b.Url),
+    };
 
     // ------------------------------------------------------------------ apps
 

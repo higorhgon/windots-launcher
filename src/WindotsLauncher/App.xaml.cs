@@ -57,6 +57,21 @@ public partial class App : Application
             File.WriteAllLines(file, rows.Select(r => $"{r.Label}	{r.Description}	{r.Right}	{(r.NeedsConfirm ? "confirm" : "-")}	{(r.Run != null || r.Item?.IsAction == true ? "run" : "-")}{(r.RunAlt != null ? "+alt" : "")}"));
             return;
         }
+        if (route.StartsWith("files:", StringComparison.OrdinalIgnoreCase))   // the file index, for tests
+        {
+            var hits = Search.Files.Search(route[6..].Split(' ', StringSplitOptions.RemoveEmptyEntries), 25, CancellationToken.None);
+            File.WriteAllLines(file, hits.Select(h => $"{h.Name}\t{h.Path}\t{(h.IsDirectory ? "dir" : "file")}\t{h.Modified:yyyy-MM-dd}"));
+            return;
+        }
+        if (route.StartsWith("bookmarks:", StringComparison.OrdinalIgnoreCase))   // browser bookmarks, for tests
+        {
+            Search.Bookmarks.RefreshNow();
+            var t = route[10..].ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var all = Search.Bookmarks.All;
+            var found = all.Where(b => t.All((b.Title + " " + b.Url).ToLowerInvariant().Contains)).Take(15).Select(b => $"{b.Title}\t{b.Url}\t{b.Source}");
+            File.WriteAllLines(file, new[] { $"{all.Count} bookmarks, per source: " + string.Join(", ", all.GroupBy(b => b.Source).Select(g => g.Key + "=" + g.Count())) }.Concat(found));
+            return;
+        }
         if (route.StartsWith("apps:", StringComparison.OrdinalIgnoreCase))
         {
             Apps.ShellApps.RefreshNow();

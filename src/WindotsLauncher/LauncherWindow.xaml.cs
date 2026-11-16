@@ -61,6 +61,7 @@ public partial class LauncherWindow : Window
         model.LoadFile(Path.Combine(AppContext.BaseDirectory, "menus", "default.jsonc"));
         model.LoadFile(Windots.UserMenuFile);
         _model = model;
+        Web.Reload();
     }
 
     /// <summary>
@@ -96,6 +97,7 @@ public partial class LauncherWindow : Window
     /// <summary>Reads the app list in the background; when it is ready, shows it if the launcher is open and fetches the first icons.</summary>
     public void RefreshApps()
     {
+        _ = Bookmarks.RefreshAsync();
         _ = ShellApps.RefreshAsync().ContinueWith(_ => Dispatcher.InvokeAsync(() =>
         {
             foreach (var row in SearchEngine.AllApps()) _ = ShellApps.LoadIconAsync(row.App!.Id);   // the first icons, before they are needed
@@ -152,13 +154,23 @@ public partial class LauncherWindow : Window
 
     private void Filter_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e) => ApplyFilter();
 
+    private CancellationTokenSource? _fileCts;
+
     private void ApplyFilter()
     {
         var text = Filter.Text;
         Hint.Visibility = text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         foreach (var r in _all) r.Confirming = false;
+        _fileCts?.Cancel();   // a file search still running is for text that is gone
+        var rootLike = _launcherMode || _current?.Id.Equals("root", StringComparison.OrdinalIgnoreCase) == true;
+        if (rootLike && SearchEngine.FileQuery(text) is { } words) { RunFileSearch(text, words); return; }
         var searchFrom = _launcherMode ? _model.Resolve("root") : _current;
         var rows = _launcherMode && text.Trim().Length == 0 ? SearchEngine.AllApps() : SearchEngine.Query(_model, searchFrom, _all, text);
+        Show(rows);
+    }
+
+    private void Show(IEnumerable<Row> rows)
+    {
         _view.Clear();
         foreach (var r in rows) _view.Add(r);
         List.Visibility = _view.Count > 0 ? Visibility.Visible : Visibility.Collapsed;   // no rows: only the bar
@@ -167,13 +179,34 @@ public partial class LauncherWindow : Window
         LoadIcons();
     }
 
-    /// <summary>App icons come from the shell, one at a time off the UI thread; a row shows its glyph until then.</summary>
+    /// <summary>`f name`: the Windows Search index is asked on a worker thread, after a short pause so typing is not a query per key.</summary>
+    private void RunFileSearch(string text, string[] words)
+    {
+        var cts = _fileCts = new CancellationTokenSource();
+        Show(new[] { new Row { Icon = "\uf002", Label = "Searching files...", Description = "the Windows Search index" } });
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(150, cts.Token);
+                var hits = Files.Search(words, 25, cts.Token);
+                if (cts.IsCancellationRequested) return;
+                var rows = hits.Count > 0
+                    ? hits.Select(Files.FileRow).ToList()
+                    : new List<Row> { new() { Icon = "\uf002", Label = "No files found", Description = "Only the folders Windows indexes are searched; type a path (C:\\...) to browse any folder" } };
+                await Dispatcher.InvokeAsync(() => { if (!cts.IsCancellationRequested && Filter.Text == text) Show(rows); });
+            }
+            catch (OperationCanceledException) { /* typed on */ }
+        });
+    }
+
+    /// <summary>Icons come from the shell, one at a time off the UI thread; a row shows its glyph until then.</summary>
     private void LoadIcons()
     {
-        foreach (var row in _view.Where(r => r.App != null && r.IconImage == null).ToList())
+        foreach (var row in _view.Where(r => r.IconImage == null && (r.App != null || r.IconPath != null)).ToList())
         {
-            var id = row.App!.Id;
-            _ = ShellApps.LoadIconAsync(id).ContinueWith(t =>
+            var task = row.App != null ? ShellApps.LoadIconAsync(row.App.Id) : ShellApps.LoadFileIconAsync(row.IconPath!);
+            _ = task.ContinueWith(t =>
             {
                 if (t.Result != null) Dispatcher.InvokeAsync(() => row.IconImage = t.Result);
             });
@@ -234,6 +267,8 @@ public partial class LauncherWindow : Window
             case Key.K when ctrl: Move(-1); e.Handled = true; break;
             case Key.N when ctrl: Move(1); e.Handled = true; break;
             case Key.P when ctrl: Move(-1); e.Handled = true; break;
+            case Key.Tab when List.SelectedItem is Row { Completion.Length: > 0 } c:
+                Filter.Text = c.Completion; Filter.CaretIndex = Filter.Text.Length; e.Handled = true; break;
             case Key.PageDown: Move(5); e.Handled = true; break;
             case Key.PageUp: Move(-5); e.Handled = true; break;
             case Key.Enter: Activate(List.SelectedItem as Row, alt); e.Handled = true; break;

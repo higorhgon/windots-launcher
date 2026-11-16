@@ -88,10 +88,16 @@ public static class ShellApps
     private static readonly Dictionary<string, ImageSource?> Icons = new();
     private static readonly SemaphoreSlim IconGate = new(1, 1);
 
-    public static ImageSource? CachedIcon(string id) => Icons.TryGetValue(id, out var i) ? i : null;
+    public static ImageSource? CachedIcon(string id) { lock (Icons) { return Icons.TryGetValue(id, out var i) ? i : null; } }
+    public static ImageSource? CachedFileIcon(string path) => CachedIcon("file:" + path);
 
     /// <summary>The icon of an app, as the shell draws it (48 px, with transparency). Loaded one at a time off the UI thread.</summary>
-    public static Task<ImageSource?> LoadIconAsync(string id)
+    public static Task<ImageSource?> LoadIconAsync(string id) => LoadIconCore(id, $"shell:AppsFolder\\{id}");
+
+    /// <summary>The icon the shell shows for a file or folder.</summary>
+    public static Task<ImageSource?> LoadFileIconAsync(string path) => LoadIconCore("file:" + path, path);
+
+    private static Task<ImageSource?> LoadIconCore(string id, string parsingName)
     {
         lock (Icons) { if (Icons.TryGetValue(id, out var cached)) return Task.FromResult(cached); }
         var tcs = new TaskCompletionSource<ImageSource?>();
@@ -101,7 +107,7 @@ public static class ShellApps
             try
             {
                 IconGate.Wait();
-                try { img = ExtractIcon(id); } finally { IconGate.Release(); }
+                try { img = ExtractIcon(parsingName); } finally { IconGate.Release(); }
             }
             catch (Exception ex) { Windots.Trace($"icon failed for {id}: {ex.Message}"); }
             lock (Icons) { Icons[id] = img; }
@@ -113,10 +119,10 @@ public static class ShellApps
         return tcs.Task;
     }
 
-    private static ImageSource? ExtractIcon(string id)
+    private static ImageSource? ExtractIcon(string parsingName)
     {
         var iid = typeof(IShellItem).GUID;
-        SHCreateItemFromParsingName($"shell:AppsFolder\\{id}", IntPtr.Zero, ref iid, out var item);
+        SHCreateItemFromParsingName(parsingName, IntPtr.Zero, ref iid, out var item);
         try
         {
             var factory = (IShellItemImageFactory)item;
