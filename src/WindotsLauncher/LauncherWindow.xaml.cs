@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using WindotsLauncher.Apps;
 using WindotsLauncher.Menu;
 
 namespace WindotsLauncher;
@@ -102,6 +103,7 @@ public partial class LauncherWindow : Window
         if (toggle && IsVisible) { Hide(); return; }
         ApplyPalette(Palette.Load(Windots.CurrentTheme()));
         LoadMenu();
+        if (ShellApps.Age > TimeSpan.FromMinutes(10)) _ = ShellApps.RefreshAsync();   // new installs show up
         _stack.Clear();
         var item = _model.Resolve(route) ?? _model.Resolve("root");
         if (item == null) return;
@@ -144,17 +146,59 @@ public partial class LauncherWindow : Window
         IEnumerable<Row> rows = _all;
         if (tokens.Length > 0)
         {
-            rows = _all
-                .Select(r => (row: r, hay: $"{r.Label} {r.SearchText}".ToLowerInvariant()))
-                .Where(x => tokens.All(t => x.hay.Contains(t)))
-                .OrderBy(x => x.row.Label.StartsWith(tokens[0], StringComparison.OrdinalIgnoreCase) ? 0 : x.row.Label.ToLowerInvariant().Contains(tokens[0]) ? 1 : 2)
-                .Select(x => x.row);
+            // menu rows and, on the root menu, installed apps, in one list ordered by how well they match
+            var scored = new List<(Row row, double score)>();
+            foreach (var r in _all)
+            {
+                var hay = $"{r.Label} {r.SearchText}".ToLowerInvariant();
+                if (!tokens.All(t => hay.Contains(t))) continue;
+                var label = r.Label.ToLowerInvariant();
+                // a little ahead of an app with the same kind of match: "sys" finds System before System Information
+                scored.Add((r, (label.StartsWith(tokens[0]) ? 0 : label.Contains(tokens[0]) ? 1 : 2) - 0.25));
+            }
+            if (_current?.Id.Equals("root", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                foreach (var a in ShellApps.Apps)
+                {
+                    var s = Matcher.Score(tokens, a);
+                    if (s != null) scored.Add((AppRow(a), s.Value));
+                }
+            }
+            rows = scored.OrderBy(x => x.score).Select(x => x.row).Take(12);
         }
         foreach (var r in _all) r.Confirming = false;
         _view.Clear();
         foreach (var r in rows) _view.Add(r);
         List.SelectedIndex = _view.Count > 0 ? 0 : -1;
         if (_view.Count > 0) List.ScrollIntoView(_view[0]);
+        LoadIcons();
+    }
+
+    private Row AppRow(AppEntry app)
+    {
+        var row = new Row
+        {
+            Icon = "",
+            Label = app.Name,
+            Description = "Application",
+            App = app,
+            IconImage = ShellApps.CachedIcon(app.Id),
+            Run = () => { Usage.Record(app.Id); ShellApps.Launch(app); },
+        };
+        return row;
+    }
+
+    /// <summary>App icons come from the shell, one at a time off the UI thread; a row shows its glyph until then.</summary>
+    private void LoadIcons()
+    {
+        foreach (var row in _view.Where(r => r.App != null && r.IconImage == null).ToList())
+        {
+            var id = row.App!.Id;
+            _ = ShellApps.LoadIconAsync(id).ContinueWith(t =>
+            {
+                if (t.Result != null) Dispatcher.InvokeAsync(() => row.IconImage = t.Result);
+            });
+        }
     }
 
     // ------------------------------------------------------------------ actions

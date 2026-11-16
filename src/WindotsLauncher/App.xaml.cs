@@ -36,6 +36,7 @@ public partial class App : Application
         }
         if (verb == "quit" || verb == "close") { Shutdown(); return; }
 
+        _ = Apps.ShellApps.RefreshAsync();   // the app index, in the background
         _window = new LauncherWindow();
         StartPipeServer();
         if (verb == "background") _window.Prewarm();   // started at login: warm up now, open fast later
@@ -45,6 +46,15 @@ public partial class App : Application
     /// <summary>`dump <route> <file>`: writes the rows of a route to a file and exits (for tests and scripts).</summary>
     private static void Dump(string route, string file)
     {
+        if (route.StartsWith("apps:", StringComparison.OrdinalIgnoreCase))
+        {
+            Apps.ShellApps.RefreshNow();
+            var tokens = route[5..].ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            var found = Apps.ShellApps.Apps.Select(a => (a, s: tokens.Length == 0 ? 0 : Apps.Matcher.Score(tokens, a)))
+                .Where(x => x.s != null).OrderBy(x => x.s).Take(12).Select(x => $"{x.a.Name}	{x.a.Id}	{x.s:0.000}").ToList();
+            File.WriteAllLines(file, new[] { $"{Apps.ShellApps.Apps.Count} apps indexed" }.Concat(found));
+            return;
+        }
         var model = new Menu.MenuModel();
         model.LoadFile(Path.Combine(AppContext.BaseDirectory, "menus", "default.jsonc"));
         model.LoadFile(Windots.UserMenuFile);

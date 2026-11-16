@@ -3,8 +3,8 @@
 Lançador e menu de comandos do [windots](https://github.com/higorhgon/windots), feito em WPF (.NET 9) para
 Windows 11. O objetivo é funcionar como o menu do omarchy e, no fim, **substituir o Flow Launcher**.
 
-> Estado: **fase 1 pronta** (motor, menu do omarchy, temas e atalhos de teclado). Apps, sistema, arquivos e a
-> troca do Flow vêm nas próximas fases.
+> Estado: **fases 1 e 2 prontas** (motor, menu do omarchy, temas, atalhos de teclado e busca de apps). Sistema,
+> arquivos e a troca do Flow vêm nas próximas fases.
 
 ## O que ele é
 
@@ -15,7 +15,8 @@ Windows 11. O objetivo é funcionar como o menu do omarchy e, no fim, **substitu
   `alt`, além de rotas e voltar um nível. Uma adição do windots: `confirm` (o primeiro Enter pergunta, o
   segundo executa), para reiniciar, desligar e afins.
 - **Lançador de apps e arquivos**, para trocar o Flow Launcher (hoje com Program, Explorer, Calculator,
-  Shell, Sys, ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Ainda não existe.
+  Shell, Sys, ProcessKiller, BrowserBookmark, Url, WebSearch e PluginsManager). Os apps já existem; o resto vem
+  nas fases 3 e 4.
 - **Visual do PowerToys Run** (caixa de busca arredondada, lista com ícones, seleção na cor de destaque),
   pintado pela paleta do tema atual do windots (`~\.local\state\windots\theme.name`, paletas em
   `windots\default\themes`, as mesmas do omarchy).
@@ -58,6 +59,21 @@ Teclas: `↑`/`↓` (ou `Ctrl+J`/`Ctrl+K`, `Ctrl+N`/`Ctrl+P`) escolhem, `PageUp`
 executa, `Alt+Enter` executa o `alt` do item, `Backspace` com o campo vazio (ou `Alt+Left`) volta um nível,
 `Esc` limpa o filtro e depois fecha, o mouse também funciona. Perder o foco fecha a janela.
 
+## Apps
+
+No menu raiz, o que você digita procura nos apps instalados e nas linhas do menu, numa lista só, ordenada por
+quão bem casa. A fonte é a mesma de "Todos os aplicativos" do Menu Iniciar (`shell:AppsFolder`, lida pelo
+shell): os atalhos do Menu Iniciar e os apps da Store, com os nomes e os ícones do Windows (nesta máquina, 139
+itens, o mesmo número do `Get-StartApps`). Um app abre com `explorer.exe shell:AppsFolder\<id>`.
+
+- **Casamento:** cada palavra digitada precisa casar, pelo começo do nome, pelo começo de uma palavra, em
+  qualquer ponto ou pelas iniciais (`vsc` acha Visual Studio Code). Nomes mais curtos vêm primeiro.
+- **Uso:** apps que você abre muito sobem entre os que casam igual (`~\.local\state\windots\launcher-usage.json`).
+- **Ícones:** carregados do shell, um por vez e fora da janela; a linha mostra um glifo até o ícone chegar.
+- **Índice:** montado em segundo plano ao iniciar e de novo quando passam 10 minutos, então instalações novas
+  aparecem sem reiniciar.
+- `windots-launcher.exe dump apps:<texto> <arquivo>` grava o ranking de uma busca, sem janela.
+
 ## O menu
 
 `menus/default.jsonc` é o menu padrão (Style, Keybindings, Windows settings, Setup, System). Para uma máquina
@@ -75,7 +91,7 @@ campos citados sobrescritos (como a extensão do omarchy). Comentários e vírgu
 
 1. **Pronta.** Motor e menu: janela, JSONC do omarchy, rotas, filtro, executar ação, voltar; menu raiz,
    temas e atalhos de teclado.
-2. Apps: Menu Iniciar e apps da Store, ranking por uso.
+2. **Pronta.** Apps: Menu Iniciar e apps da Store, ícones, ranking por uso.
 3. Sistema (`sys`), calculadora, comandos (Shell) e processos.
 4. Arquivos, favoritos do navegador, URLs e busca na web.
 5. Desinstalar o Flow Launcher e passar o `Alt+Space` para este app.
@@ -92,7 +108,8 @@ dotnet build -c Release          # bin\Release\net9.0-windows\windots-launcher.e
 Um launcher aberto trava o executável: `windots-launcher.exe quit` antes de compilar de novo.
 
 Não testado ainda: segundo monitor e escala de tela diferente de 100%, tema claro, a ação `Update windots`
-do menu Setup, `Alt+Enter` (`alt`) e o início automático no login.
+do menu Setup, `Alt+Enter` (`alt`), o início automático no login e apps que a lista do Windows mostra duas
+vezes com ids diferentes.
 
 ## Referências
 

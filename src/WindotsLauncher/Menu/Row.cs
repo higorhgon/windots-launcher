@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows.Media;
+using WindotsLauncher.Apps;
 
 namespace WindotsLauncher.Menu;
 
@@ -8,6 +9,7 @@ public sealed class Row : INotifyPropertyChanged
 {
     private string _label = "";
     private bool _confirming;
+    private ImageSource? _iconImage;
 
     public string Icon { get; init; } = "";
     public string Label
@@ -33,6 +35,22 @@ public sealed class Row : INotifyPropertyChanged
         get => _confirming;
         set { _confirming = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Label))); }
     }
+
+    /// <summary>A real icon (an app's), shown instead of the glyph once it is loaded.</summary>
+    public ImageSource? IconImage
+    {
+        get => _iconImage;
+        set
+        {
+            _iconImage = value;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IconImage)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowImage)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ShowGlyph)));
+        }
+    }
+    public bool ShowImage => _iconImage != null;
+    public bool ShowGlyph => _iconImage == null;
+    public AppEntry? App { get; init; }
 
     public bool HasRight => Right.Length > 0;
     public bool HasSwatches => Swatches.Count > 0;
