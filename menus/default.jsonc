@@ -16,40 +16,45 @@
   //   description  Subtitle and extra search text.
   //   when         cmd.exe command; the row is hidden when its exit code is not 0.
   //   checked      cmd.exe command; a check mark when its exit code is 0.
-  //   alt          Id of another entry that Alt+Enter runs instead.
+  //   alt          Id of another entry that Shift+Enter runs instead.
   //   confirm      windots addition: the first Enter asks, the second one runs.
 
   "root": { "label": "Go" },
 
-  "style": { "icon": "", "label": "Style", "description": "Theme, font, background" },
-  "style.theme": { "icon": "", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
-  "style.font": { "icon": "", "label": "Font", "action": "windots-install-font", "aliases": ["font", "fonts"] },
-  "style.background": { "icon": "", "label": "Background", "action": "start ms-settings:personalization-background" },
-  "style.darkmode": { "icon": "", "label": "Dark / light mode", "action": "windots-toggle-dark-mode" },
+  "style": { "icon": "\uf1fc", "label": "Style", "description": "Theme, font, background" },
+  "style.theme": { "icon": "\uf1fc", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
+  "style.font": { "icon": "\uf031", "label": "Font", "action": "windots-install-font", "aliases": ["font", "fonts"] },
+  "style.background": { "icon": "\uf03e", "label": "Background", "action": "start ms-settings:personalization-background" },
+  "style.darkmode": { "icon": "\uf186", "label": "Dark / light mode", "action": "windots-toggle-dark-mode" },
 
-  "keybindings": { "icon": "", "label": "Keybindings", "provider": "keybindings", "aliases": ["keys"], "description": "Every hotkey" },
+  "keybindings": { "icon": "\uf11c", "label": "Keybindings", "provider": "keybindings", "aliases": ["keys"], "description": "Every hotkey" },
 
-  "windows": { "icon": "", "label": "Windows settings" },
-  "windows.sound": { "icon": "", "label": "Sound", "action": "start ms-settings:sound" },
-  "windows.bluetooth": { "icon": "", "label": "Bluetooth", "action": "start ms-settings:bluetooth" },
-  "windows.network": { "icon": "", "label": "Network", "action": "start ms-settings:network" },
-  "windows.display": { "icon": "", "label": "Display", "action": "start ms-settings:display" },
-  "windows.power": { "icon": "", "label": "Power and sleep", "action": "start ms-settings:powersleep" },
+  "windows": { "icon": "\uf17a", "label": "Windows settings" },
+  "windows.settings": { "icon": "\uf013", "label": "Settings", "action": "start ms-settings:", "searchTerms": ["configuracoes", "preferences"] },
+  "windows.sound": { "icon": "\uf028", "label": "Sound", "action": "start ms-settings:sound" },
+  "windows.bluetooth": { "icon": "\uf293", "label": "Bluetooth", "action": "start ms-settings:bluetooth" },
+  "windows.network": { "icon": "\uf1eb", "label": "Network", "action": "start ms-settings:network" },
+  "windows.display": { "icon": "\uf108", "label": "Display", "action": "start ms-settings:display" },
+  "windows.power": { "icon": "\uf0e7", "label": "Power and sleep", "action": "start ms-settings:powersleep" },
 
-  "setup": { "icon": "", "label": "Setup", "description": "Update, restart apps" },
-  "setup.update": { "icon": "", "label": "Update windots", "action": "windots-launch-or-focus-tui --float --title=update pwsh -NoProfile -Command 'windots update; Read-Host Enter' " },
-  "setup.restart": { "icon": "", "label": "Restart an app" },
-  "setup.restart.whkd": { "icon": "", "label": "whkd (hotkeys)", "action": "windots-restart-whkd" },
-  "setup.restart.masir": { "icon": "", "label": "masir (focus follows mouse)", "action": "windots-restart-masir" },
-  "setup.restart.switcher": { "icon": "", "label": "komorebi-switcher", "action": "windots-restart-komorebi-switcher" },
-  "setup.restart.explorer": { "icon": "", "label": "Explorer (taskbar)", "action": "windots-restart-explorer", "confirm": true },
-  "setup.restart.flow": { "icon": "", "label": "Flow Launcher", "action": "windots-restart-flow-launcher" },
-  "setup.restart.hotkeys": { "icon": "", "label": "AutoHotkey script", "action": "windots-restart-hotkeys" },
+  "setup": { "icon": "\uf013", "label": "Setup", "description": "Update, restart apps" },
+  "setup.update": { "icon": "\uf019", "label": "Update windots", "action": "windots-launch-or-focus-tui --float --title=update pwsh -NoProfile -Command 'windots update; Read-Host Enter' " },
+  "setup.restart": { "icon": "\uf021", "label": "Restart an app" },
+  "setup.restart.whkd": { "icon": "\uf11c", "label": "whkd (hotkeys)", "action": "windots-restart-whkd" },
+  "setup.restart.masir": { "icon": "\uf245", "label": "masir (focus follows mouse)", "action": "windots-restart-masir" },
+  "setup.restart.switcher": { "icon": "\uf0c9", "label": "komorebi-switcher", "action": "windots-restart-komorebi-switcher" },
+  "setup.restart.explorer": { "icon": "\uf07b", "label": "Explorer (taskbar)", "action": "windots-restart-explorer", "confirm": true },
+  "setup.restart.flow": { "icon": "\uf002", "label": "Flow Launcher", "action": "windots-restart-flow-launcher" },
+  "setup.restart.hotkeys": { "icon": "\uf11c", "label": "AutoHotkey script", "action": "windots-restart-hotkeys" },
 
-  "system": { "icon": "", "label": "System" },
-  "system.lock": { "icon": "", "label": "Lock", "action": "rundll32.exe user32.dll,LockWorkStation" },
-  "system.sleep": { "icon": "", "label": "Sleep", "action": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0" },
-  "system.logout": { "icon": "", "label": "Log out", "action": "shutdown /l", "confirm": true },
-  "system.restart": { "icon": "", "label": "Restart", "action": "shutdown /r /t 0", "confirm": true },
-  "system.shutdown": { "icon": "", "label": "Shut down", "action": "shutdown /s /t 0", "confirm": true }
+  "system": { "icon": "\uf011", "label": "System", "description": "Lock, sleep, restart, shut down" },
+  "system.lock": { "icon": "\uf023", "label": "Lock", "action": "rundll32.exe user32.dll,LockWorkStation", "searchTerms": ["bloquear"] },
+  "system.sleep": { "icon": "\uf236", "label": "Sleep", "action": "rundll32.exe powrprof.dll,SetSuspendState 0,1,0", "searchTerms": ["suspend", "suspender", "dormir"] },
+  "system.hibernate": { "icon": "\uf236", "label": "Hibernate", "action": "shutdown /h", "confirm": true, "searchTerms": ["hibernar"] },
+  "system.logout": { "icon": "\uf08b", "label": "Log out", "action": "shutdown /l", "confirm": true, "searchTerms": ["sign out", "signout", "logoff", "sair", "encerrar sessao"] },
+  "system.restart": { "icon": "\uf021", "label": "Restart", "action": "shutdown /r /t 0", "confirm": true, "searchTerms": ["reboot", "reiniciar"] },
+  "system.shutdown": { "icon": "\uf011", "label": "Shut down", "action": "shutdown /s /t 0", "confirm": true, "searchTerms": ["shutdown", "poweroff", "power off", "desligar"] },
+  "system.taskmanager": { "icon": "\uf080", "label": "Task Manager", "action": "taskmgr", "searchTerms": ["gerenciador de tarefas", "processes"] },
+  "system.recyclebin": { "icon": "\uf1f8", "label": "Open Recycle Bin", "action": "start shell:RecycleBinFolder", "searchTerms": ["lixeira", "trash"] },
+  "system.emptyrecyclebin": { "icon": "\uf014", "label": "Empty Recycle Bin", "action": "Clear-RecycleBin -Force -ErrorAction SilentlyContinue", "confirm": true, "searchTerms": ["lixeira", "esvaziar", "trash"] }
 }

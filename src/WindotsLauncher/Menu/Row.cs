@@ -28,6 +28,8 @@ public sealed class Row : INotifyPropertyChanged
     public MenuItem? Item { get; init; }
     /// <summary>What Enter does for a provider row (menu rows use Item).</summary>
     public Action? Run { get; init; }
+    /// <summary>What Alt+Enter does for a row that is not a menu item (the shell row runs without a window).</summary>
+    public Action? RunAlt { get; init; }
     public bool NeedsConfirm { get; init; }
 
     public bool Confirming

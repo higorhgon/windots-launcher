@@ -3,8 +3,8 @@
 Lançador e menu de comandos do [windots](https://github.com/higorhgon/windots), feito em WPF (.NET 9) para
 Windows 11. O objetivo é funcionar como o menu do omarchy e, no fim, **substituir o Flow Launcher**.
 
-> Estado: **fases 1 e 2 prontas** (motor, menu do omarchy, temas, atalhos de teclado e busca de apps). Sistema,
-> arquivos e a troca do Flow vêm nas próximas fases.
+> Estado: **fases 1 a 3 prontas** (motor, menu do omarchy, temas, atalhos de teclado, apps, calculadora, shell,
+> processos e comandos do sistema). Arquivos, favoritos, URLs e a troca do Flow vêm nas próximas fases.
 
 ## O que ele é
 
@@ -56,8 +56,10 @@ rota é o id de um menu (`style.theme`) ou um apelido (`theme`, `keys`).
 testes e scripts).
 
 Teclas: `↑`/`↓` (ou `Ctrl+J`/`Ctrl+K`, `Ctrl+N`/`Ctrl+P`) escolhem, `PageUp`/`PageDown` pulam, `Enter`
-executa, `Alt+Enter` executa o `alt` do item, `Backspace` com o campo vazio (ou `Alt+Left`) volta um nível,
-`Esc` limpa o filtro e depois fecha, o mouse também funciona. Perder o foco fecha a janela.
+executa, `Shift+Enter` executa a ação alternativa (o `alt` do item; no omarchy é o Alt), `Backspace` com o campo
+vazio volta um nível, `Esc` limpa o filtro e depois fecha, o mouse também funciona. Perder o foco fecha a janela.
+O Alt não serve para isso aqui: no windots ele faz o papel do Super, então o whkd fica com `Alt+Enter` (abre um
+Terminal) e `Alt+setas`, e essas teclas nunca chegam à janela.
 
 ## Apps
 
@@ -73,6 +75,29 @@ itens, o mesmo número do `Get-StartApps`). Um app abre com `explorer.exe shell:
 - **Índice:** montado em segundo plano ao iniciar e de novo quando passam 10 minutos, então instalações novas
   aparecem sem reiniciar.
 - `windots-launcher.exe dump apps:<texto> <arquivo>` grava o ranking de uma busca, sem janela.
+
+## Calculadora, shell, processos e sistema
+
+No menu raiz, o texto digitado também pode ser:
+
+- **Uma conta** (`12*34+5`, `sqrt(144)+2^10`, `pi*2`, `0x1f+1`): aparece `= 413` no topo; Enter copia o resultado.
+  Operadores `+ - * / % ^ ( )`, as constantes `pi`, `e` e `tau`, as funções `sqrt abs sin cos tan asin acos atan ln
+  log log10 exp floor ceil round` e, com `;` separando os argumentos, `pow min max mod`. A vírgula entre dígitos é
+  a vírgula decimal (`1,5+2`). Um número sozinho (`42`) ou um `e` solto não viram conta, para não atrapalhar a
+  busca de apps.
+- **`> comando`**: executa no PowerShell. Enter abre um Windows Terminal que mantém o comando aberto;
+  `Shift+Enter` roda sem janela (como as ações do menu).
+- **`kill nome`**: lista os processos que casam com o nome (agrupados, com a quantidade e a memória) e Enter, duas
+  vezes (a primeira pede confirmação), encerra todos com os filhos. Só `kill`, sem nome, mostra os programas que têm
+  janela. Nunca aparecem os processos que derrubariam o Windows (`csrss`, `winlogon`, `lsass`, `svchost`...)
+  nem o próprio launcher.
+- **O nome de um comando de qualquer submenu**: `shut`, `desligar`, `reboot`, `lixeira`, `tokyo`... acham
+  System › Shut down, Restart, Empty Recycle Bin, o tema Tokyo Night etc., cada um com o menu a que pertence.
+  Os que desligam, reiniciam ou apagam pedem confirmação (`confirm`).
+
+O menu System tem Lock, Sleep, Hibernate, Log out, Restart, Shut down, Task Manager e a Lixeira (abrir e esvaziar),
+com termos de busca em inglês e português (`searchTerms`).
+`windots-launcher.exe dump q:<texto> <arquivo>` grava o que uma busca no menu raiz listaria, sem janela.
 
 ## O menu
 
@@ -92,7 +117,7 @@ campos citados sobrescritos (como a extensão do omarchy). Comentários e vírgu
 1. **Pronta.** Motor e menu: janela, JSONC do omarchy, rotas, filtro, executar ação, voltar; menu raiz,
    temas e atalhos de teclado.
 2. **Pronta.** Apps: Menu Iniciar e apps da Store, ícones, ranking por uso.
-3. Sistema (`sys`), calculadora, comandos (Shell) e processos.
+3. **Pronta.** Sistema (`sys`), calculadora, comandos (Shell) e processos.
 4. Arquivos, favoritos do navegador, URLs e busca na web.
 5. Desinstalar o Flow Launcher e passar o `Alt+Space` para este app.
 
@@ -108,8 +133,9 @@ dotnet build -c Release          # bin\Release\net9.0-windows\windots-launcher.e
 Um launcher aberto trava o executável: `windots-launcher.exe quit` antes de compilar de novo.
 
 Não testado ainda: segundo monitor e escala de tela diferente de 100%, tema claro, a ação `Update windots`
-do menu Setup, `Alt+Enter` (`alt`), o início automático no login e apps que a lista do Windows mostra duas
-vezes com ids diferentes.
+do menu Setup, o `Shift+Enter` de um item do menu com `alt`, o `> comando` com Enter (abre o Windows Terminal), o
+encerrar de um programa com permissão de administrador, o início automático no login e apps que a lista do
+Windows mostra duas vezes com ids diferentes.
 
 ## Referências
 

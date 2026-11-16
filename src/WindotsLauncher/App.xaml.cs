@@ -46,6 +46,17 @@ public partial class App : Application
     /// <summary>`dump <route> <file>`: writes the rows of a route to a file and exits (for tests and scripts).</summary>
     private static void Dump(string route, string file)
     {
+        if (route.StartsWith("q:", StringComparison.OrdinalIgnoreCase))   // what typing at the root menu would list
+        {
+            Apps.ShellApps.RefreshNow();
+            var m = new Menu.MenuModel();
+            m.LoadFile(Path.Combine(AppContext.BaseDirectory, "menus", "default.jsonc"));
+            m.LoadFile(Windots.UserMenuFile);
+            var root = m.Resolve("root");
+            var rows = Search.SearchEngine.Query(m, root, root == null ? new List<Menu.Row>() : Menu.RowBuilder.Build(m, root), route[2..]);
+            File.WriteAllLines(file, rows.Select(r => $"{r.Label}	{r.Description}	{r.Right}	{(r.NeedsConfirm ? "confirm" : "-")}	{(r.Run != null || r.Item?.IsAction == true ? "run" : "-")}{(r.RunAlt != null ? "+alt" : "")}"));
+            return;
+        }
         if (route.StartsWith("apps:", StringComparison.OrdinalIgnoreCase))
         {
             Apps.ShellApps.RefreshNow();
