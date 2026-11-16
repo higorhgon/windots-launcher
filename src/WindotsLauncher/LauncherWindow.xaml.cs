@@ -127,10 +127,6 @@ public partial class LauncherWindow : Window
         var item = _model.Resolve(id) ?? _model.Resolve("root");
         if (item == null) return;
         _current = item;
-        // the trail only inside a submenu: at the root it would just say "Go" and cost a line
-        var trail = _model.Path(item).Skip(1).Select(i => i.Title.Length > 0 ? i.Title : i.Label).ToList();
-        Crumb.Text = string.Join("  ›  ", trail);
-        Crumb.Visibility = trail.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         _all = BuildRows(item);
         Filter.Text = "";
         ApplyFilter();

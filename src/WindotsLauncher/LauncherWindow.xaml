@@ -87,22 +87,14 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <!-- one row, like PowerToys Run: [trail in a submenu] [search box] -->
+            <!-- one row, like PowerToys Run: just the search box -->
             <Grid Grid.Row="0" Height="52" Margin="20,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="Crumb" Grid.Column="0" Margin="0,0,14,0" FontSize="13" VerticalAlignment="Center"
-                           Foreground="{DynamicResource Muted}" Visibility="Collapsed" />
-                <Grid Grid.Column="1">
-                    <TextBlock x:Name="Hint" Text="Search..." FontSize="18" Foreground="{DynamicResource Muted}" Opacity="0.7"
-                               VerticalAlignment="Center" IsHitTestVisible="False" />
-                    <TextBox x:Name="Filter" FontSize="18" Background="Transparent" BorderThickness="0"
-                             Foreground="{DynamicResource Fg}" CaretBrush="{DynamicResource Accent}"
-                             SelectionBrush="{DynamicResource SelBg}" VerticalContentAlignment="Center" Padding="0"
-                             TextChanged="Filter_TextChanged" />
-                </Grid>
+                <TextBlock x:Name="Hint" Text="Search..." FontSize="18" Foreground="{DynamicResource Muted}" Opacity="0.7"
+                           VerticalAlignment="Center" IsHitTestVisible="False" />
+                <TextBox x:Name="Filter" FontSize="18" Background="Transparent" BorderThickness="0"
+                         Foreground="{DynamicResource Fg}" CaretBrush="{DynamicResource Accent}"
+                         SelectionBrush="{DynamicResource SelBg}" VerticalContentAlignment="Center" Padding="0"
+                         TextChanged="Filter_TextChanged" />
             </Grid>
 
             <Border Grid.Row="1" Height="1" Background="{DynamicResource Line}" />
