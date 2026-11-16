@@ -22,8 +22,8 @@ public partial class LauncherWindow : Window
         ApplyPalette(Palette.Load(Windots.CurrentTheme()));
         InitializeComponent();
         List.ItemsSource = _view;
-        Activated += (_, _) => _activated = true;
-        Deactivated += (_, _) => { if (_activated && IsVisible) Hide(); };
+        Activated += (_, _) => { _activated = true; Windots.Trace($"Activated visible={IsVisible}"); };
+        Deactivated += (_, _) => { Windots.Trace($"Deactivated activated={_activated} visible={IsVisible}"); if (_activated && IsVisible) Hide(); };
         PreviewKeyDown += OnPreviewKeyDown;
         // created hidden: the first Summon only has to show it
         new WindowInteropHelper(this).EnsureHandle();
@@ -59,6 +59,36 @@ public partial class LauncherWindow : Window
         _model = model;
     }
 
+    /// <summary>
+    /// Renders every menu view once, off-screen and invisible, so the first real open does not pay for the JIT,
+    /// WPF's first layout and the glyph and template caches (~300 ms the first time, ~50 ms after).
+    /// </summary>
+    public void Prewarm()
+    {
+        try
+        {
+            var hwnd = new WindowInteropHelper(this).EnsureHandle();
+            LoadMenu();
+            Opacity = 0;
+            ShowActivated = false;
+            Native.SetWindowPos(hwnd, Native.HWND_TOPMOST, -32000, -32000, 0, 0, Native.SWP_NOSIZE | Native.SWP_NOACTIVATE);
+            Show();
+            foreach (var route in new[] { "root", "style.theme", "keybindings", "root" })
+            {
+                Open(route);
+                Dispatcher.Invoke(() => { }, System.Windows.Threading.DispatcherPriority.Render);
+            }
+        }
+        catch { /* warming is only an optimisation */ }
+        finally
+        {
+            Hide();
+            Opacity = 1;
+            ShowActivated = true;
+            _activated = false;
+        }
+    }
+
     public void Refresh()
     {
         if (!IsVisible || _current == null) return;
@@ -68,6 +98,7 @@ public partial class LauncherWindow : Window
 
     public void Summon(string route, bool toggle)
     {
+        Windots.Trace($"Summon route={route} toggle={toggle} visible={IsVisible}");
         if (toggle && IsVisible) { Hide(); return; }
         ApplyPalette(Palette.Load(Windots.CurrentTheme()));
         LoadMenu();
@@ -80,8 +111,10 @@ public partial class LauncherWindow : Window
         Place();
         _activated = false;
         Show();
+        Windots.Trace($"shown left={Left} top={Top} active={IsActive}");
         Activate();
         GrabForeground();
+        Windots.Trace($"grabbed active={IsActive}");
         Filter.Focus();
         Keyboard.Focus(Filter);
     }
@@ -206,13 +239,36 @@ public partial class LauncherWindow : Window
         Native.SetWindowPos(hwnd, Native.HWND_TOPMOST, x, y, 0, 0, Native.SWP_NOSIZE | Native.SWP_NOACTIVATE);
     }
 
+    /// <summary>
+    /// Windows gives the foreground only to the process that got the last input, and the permission another
+    /// process hands over (AllowSetForegroundWindow) is withdrawn by the next key event, which AutoHotkey's own
+    /// "mask the Windows key" keystroke can be. So: ask; else share the input queue of the window that has the
+    /// foreground and ask again; else tap Alt (the old trick). Checked against what Windows says, not WPF.
+    /// </summary>
     private void GrabForeground()
     {
         var hwnd = new WindowInteropHelper(this).Handle;
-        if (Native.SetForegroundWindow(hwnd)) return;
-        // Windows refuses focus to a process that did not get the last input: a tap on Alt gives it the right
+        bool Has() => Native.GetForegroundWindow() == hwnd;
+
+        if (Native.SetForegroundWindow(hwnd) && Has()) { Windots.Trace("foreground: direct"); return; }
+
+        var fg = Native.GetForegroundWindow();
+        var fgThread = fg == IntPtr.Zero ? 0 : Native.GetWindowThreadProcessId(fg, out _);
+        var me = Native.GetCurrentThreadId();
+        if (fgThread != 0 && fgThread != me && Native.AttachThreadInput(me, fgThread, true))
+        {
+            try
+            {
+                Native.BringWindowToTop(hwnd);
+                Native.SetForegroundWindow(hwnd);
+            }
+            finally { Native.AttachThreadInput(me, fgThread, false); }
+            if (Has()) { Windots.Trace("foreground: attached input"); return; }
+        }
+
         Native.keybd_event(Native.VK_MENU, 0, 0, UIntPtr.Zero);
         Native.keybd_event(Native.VK_MENU, 0, Native.KEYEVENTF_KEYUP, UIntPtr.Zero);
         Native.SetForegroundWindow(hwnd);
+        Windots.Trace($"foreground: alt tap, now {(Has() ? "ours" : "NOT ours")}");
     }
 }

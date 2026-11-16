@@ -38,7 +38,8 @@ public partial class App : Application
 
         _window = new LauncherWindow();
         StartPipeServer();
-        if (verb != "background") _window.Summon(route, toggle: false);
+        if (verb == "background") _window.Prewarm();   // started at login: warm up now, open fast later
+        else _window.Summon(route, toggle: false);
     }
 
     /// <summary>`dump <route> <file>`: writes the rows of a route to a file and exits (for tests and scripts).</summary>

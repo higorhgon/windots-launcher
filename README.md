@@ -41,6 +41,14 @@ Há um processo residente: o primeiro uso inicia o app, os seguintes só mandam 
 menu abre na hora. `windots-launcher.exe --background` só inicia o processo (é o que o login faz, depois do
 `windots refresh autostart`).
 
+**Velocidade.** Abrir leva 16–60 ms com o processo residente (a primeira abertura depois de iniciar, uns 80 ms,
+porque o `--background` renderiza o menu uma vez fora da tela). Iniciar `windots-launcher.exe toggle` só para
+mandar o pedido custa um processo .NET inteiro (~300 ms), então o AutoHotkey escreve direto no pipe
+`windots-launcher` (linha `verbo<TAB>rota`) e só abre o executável se o pipe não existir. O foco é pedido
+com `SetForegroundWindow`; se o Windows recusar, a janela compartilha a fila de entrada da janela em primeiro
+plano e pede de novo (o Windows só dá foco a quem recebeu a última entrada). `WINDOTS_LAUNCHER_TRACE=<arquivo>`
+grava um log de diagnóstico.
+
 Verbos (como o `omarchy menu`): `toggle [rota]` (padrão), `summon [rota]`, `close`, `refresh`, `quit`. Uma
 rota é o id de um menu (`style.theme`) ou um apelido (`theme`, `keys`).
 `windots-launcher.exe dump <rota> <arquivo>` grava as linhas de uma rota num arquivo, sem abrir janela (para

@@ -164,14 +164,17 @@ public sealed class KeybindingsProvider : IProvider
         {
             var h = Regex.Match(line, "^;\\s*---\\s*(.+?)\\s*---");
             if (h.Success) { section = h.Groups[1].Value; continue; }
-            var m = Regex.Match(line, "^\\s*([~*$!+^#]*)(\\w+)::");
+            var m = Regex.Match(line, "^\\s*([~*$!+^#]*)(\\w+)::(.*)$");
             if (!m.Success) continue;
+            // a trailing "; description" names the hotkey; without one the section header does
+            var note = Regex.Match(m.Groups[3].Value, ";\\s*(.+)$");
+            var desc = note.Success ? note.Groups[1].Value.Trim() : section;
             var mods = m.Groups[1].Value.Where(AhkMods.ContainsKey).Select(c => AhkMods[c]).ToList();
             var key = AhkKeys.TryGetValue(m.Groups[2].Value, out var kn) ? kn : m.Groups[2].Value;
             mods.Add(key);
             var keys = string.Join(" + ", mods);
             if (rows.Any(r => r.Keys == keys)) continue;   // Win listed twice (LWin / RWin)
-            rows.Add(new Binding(keys, "AutoHotkey", section, ""));
+            rows.Add(new Binding(keys, "AutoHotkey", desc, ""));
         }
     }
 }

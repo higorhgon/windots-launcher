@@ -20,6 +20,16 @@ public static class Windots
         }
     }
 
+    private static readonly string? TraceFile = Environment.GetEnvironmentVariable("WINDOTS_LAUNCHER_TRACE");
+    private static readonly System.Diagnostics.Stopwatch TraceClock = System.Diagnostics.Stopwatch.StartNew();
+
+    /// <summary>Debug log: only written when WINDOTS_LAUNCHER_TRACE names a file.</summary>
+    public static void Trace(string message)
+    {
+        if (string.IsNullOrEmpty(TraceFile)) return;
+        try { File.AppendAllText(TraceFile, $"{TraceClock.ElapsedMilliseconds,7} ms  {message}{Environment.NewLine}"); } catch { }
+    }
+
     public static string ThemeStateFile => Path.Combine(Home, ".local", "state", "windots", "theme.name");
     public static string ThemesDir => Path.Combine(Repo, "default", "themes");
     public static string UserMenuFile => Path.Combine(Home, ".config", "windots", "menu.jsonc");
