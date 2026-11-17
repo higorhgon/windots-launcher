@@ -65,7 +65,7 @@
                         </Style>
                     </StackPanel.Style>
                     <TextBlock Text="{Binding Label}" FontSize="15" Foreground="{DynamicResource Fg}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis"
+                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="{DynamicResource Subtle}" TextTrimming="CharacterEllipsis"
                                Visibility="{Binding HasDescription, Converter={StaticResource Vis}}" />
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,16,0">
@@ -80,7 +80,7 @@
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-                    <TextBlock Text="{Binding Right}" FontSize="12" Foreground="{DynamicResource Muted}" VerticalAlignment="Center"
+                    <TextBlock Text="{Binding Right}" FontSize="12" Foreground="{DynamicResource Subtle}" VerticalAlignment="Center"
                                Visibility="{Binding HasRight, Converter={StaticResource Vis}}" />
                     <TextBlock Text="&#x2713;" FontSize="15" Margin="10,0,0,0" Foreground="{DynamicResource Accent}" VerticalAlignment="Center"
                                Visibility="{Binding Checked, Converter={StaticResource Vis}}" />
@@ -108,7 +108,7 @@
 
             <!-- one row, like PowerToys Run: just the search box -->
             <Grid Grid.Row="0" Height="52" Margin="20,0">
-                <TextBlock x:Name="Hint" Text="Search..." FontSize="18" Foreground="{DynamicResource Muted}" Opacity="0.7"
+                <TextBlock x:Name="Hint" Text="Search..." FontSize="18" Foreground="{DynamicResource Subtle}"
                            VerticalAlignment="Center" IsHitTestVisible="False" />
                 <TextBox x:Name="Filter" FontSize="18" Background="Transparent" BorderThickness="0"
                          Foreground="{DynamicResource Fg}" CaretBrush="{DynamicResource Accent}"
@@ -129,11 +129,11 @@
                     BorderBrush="{DynamicResource Line}" BorderThickness="1,0,0,0">
                 <StackPanel Margin="18,18,18,16" VerticalAlignment="Top">
                     <Border x:Name="PreviewSurface" Height="202" CornerRadius="8" Background="{DynamicResource Hover}">
-                        <TextBlock x:Name="PreviewHint" Text="" FontSize="13" Foreground="{DynamicResource Muted}"
+                        <TextBlock x:Name="PreviewHint" Text="" FontSize="13" Foreground="{DynamicResource Subtle}"
                                    HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
                     <TextBlock x:Name="PreviewTitle" Margin="2,12,2,0" FontSize="15" Foreground="{DynamicResource Fg}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock x:Name="PreviewInfo" Margin="2,2,2,0" FontSize="12" Foreground="{DynamicResource Muted}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="PreviewInfo" Margin="2,2,2,0" FontSize="12" Foreground="{DynamicResource Subtle}" TextTrimming="CharacterEllipsis" />
                 </StackPanel>
             </Border>
         </Grid>

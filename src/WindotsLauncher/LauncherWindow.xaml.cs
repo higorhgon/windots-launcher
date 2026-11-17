@@ -45,8 +45,9 @@ public partial class LauncherWindow : Window
         r["Bg"] = B(p.Background);
         r["Fg"] = B(p.Foreground);
         r["Muted"] = B(p.Muted);
+        r["Subtle"] = B(p.Subtle);
         r["Accent"] = B(p.Accent);
-        r["SelBg"] = B(p.Accent, 0x38);
+        r["SelBg"] = B(p.Accent, Palette.SelectionAlpha);
         r["Hover"] = B(p.Foreground, 0x14);
         r["Line"] = B(p.Muted, 0x66);
     }

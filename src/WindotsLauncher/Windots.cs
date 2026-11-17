@@ -99,6 +99,58 @@ public sealed class Palette
     public Color Selection { get; init; }
     public Color[] Strip { get; init; } = Array.Empty<Color>();
 
+    /// <summary>Opacity of the accent over the background on the selected row (LauncherWindow's SelBg).</summary>
+    public const byte SelectionAlpha = 0x38;
+
+    /// <summary>
+    /// Secondary text (subtitles, hints on the right, the preview's info): the theme's muted colour moved toward the
+    /// foreground just enough to be readable. omarchy's muted is made for comments and goes nearly invisible on the
+    /// background (1.5:1 in most themes) and on the selected row (1:1 in lumon, everforest, matte-black, hackerman).
+    /// The target is WCAG's 4.5:1 for small text, against both the background and the selected row, whichever is worse;
+    /// a theme whose foreground cannot reach it gets the foreground.
+    /// </summary>
+    public Color Subtle { get; init; }
+
+    public const double SubtleContrast = 4.5;
+
+    static double Luminance(Color c)
+    {
+        static double Ch(byte v) { var x = v / 255.0; return x <= 0.03928 ? x / 12.92 : Math.Pow((x + 0.055) / 1.055, 2.4); }
+        return 0.2126 * Ch(c.R) + 0.7152 * Ch(c.G) + 0.0722 * Ch(c.B);
+    }
+
+    public static double Contrast(Color a, Color b)
+    {
+        double la = Luminance(a), lb = Luminance(b);
+        return (Math.Max(la, lb) + 0.05) / (Math.Min(la, lb) + 0.05);
+    }
+
+    /// <summary><paramref name="top"/> at <paramref name="alpha"/> over <paramref name="bottom"/>, as WPF draws it.</summary>
+    public static Color Over(Color top, byte alpha, Color bottom)
+    {
+        double a = alpha / 255.0;
+        byte M(byte t, byte b) => (byte)Math.Round(t * a + b * (1 - a));
+        return Color.FromRgb(M(top.R, bottom.R), M(top.G, bottom.G), M(top.B, bottom.B));
+    }
+
+    static Color Mix(Color from, Color to, double t)
+    {
+        byte M(byte f, byte e) => (byte)Math.Round(f + (e - f) * t);
+        return Color.FromRgb(M(from.R, to.R), M(from.G, to.G), M(from.B, to.B));
+    }
+
+    static Color ReadableSubtle(Color muted, Color fg, Color bg, Color accent)
+    {
+        var selected = Over(accent, SelectionAlpha, bg);
+        double Worst(Color c) => Math.Min(Contrast(c, bg), Contrast(c, selected));
+        for (var step = 0; step <= 20; step++)
+        {
+            var c = Mix(muted, fg, step / 20.0);
+            if (Worst(c) >= SubtleContrast) return c;
+        }
+        return fg;
+    }
+
     public static Color Hex(string? s, Color fallback)
     {
         if (s == null || !Regex.IsMatch(s, "^#[0-9a-fA-F]{6}$")) return fallback;
@@ -121,14 +173,16 @@ public sealed class Palette
         var bg = C("background", Color.FromRgb(0x1e, 0x1e, 0x2e));
         var fg = C("foreground", Color.FromRgb(0xcd, 0xd6, 0xf4));
         var muted = C("muted", fg);
+        var accent = C("accent", Color.FromRgb(0x89, 0xb4, 0xfa));
         return new Palette
         {
             Name = theme,
             Mode = kv.TryGetValue("mode", out var mode) ? mode : "dark",
             Background = bg,
             Foreground = fg,
-            Accent = C("accent", Color.FromRgb(0x89, 0xb4, 0xfa)),
+            Accent = accent,
             Muted = muted,
+            Subtle = ReadableSubtle(muted, fg, bg, accent),
             Selection = C("selection", muted),
             Strip = new[] { "accent", "red", "yellow", "green", "blue", "magenta" }.Select(k => C(k, fg)).ToArray(),
         };
