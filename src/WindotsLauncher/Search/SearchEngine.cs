@@ -255,21 +255,42 @@ public static class SearchEngine
         catch (Exception ex) { Debug.WriteLine($"open failed: {ex.Message}"); }
     }
 
-    /// <summary>A Windows Terminal window with PowerShell running the command and staying open.</summary>
+    /// <summary>
+    /// A window of windots' default terminal (windots-default-terminal: Ghostty or Windows Terminal) with PowerShell
+    /// running the command and staying open. Read here, not through windots-launch-terminal: a pwsh would cost ~300 ms.
+    /// </summary>
     public static void RunInTerminal(string command)
     {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         try
         {
-            var psi = new ProcessStartInfo("wt.exe") { UseShellExecute = false };
-            foreach (var a in new[] { "-w", "new", "pwsh.exe", "-NoExit", "-Command", command }) psi.ArgumentList.Add(a);
+            var ghostty = DefaultGhostty(home);
+            var psi = new ProcessStartInfo(ghostty ?? "wt.exe") { UseShellExecute = false, WorkingDirectory = home };
+            if (ghostty != null) { psi.ArgumentList.Add($"--working-directory={home}"); psi.ArgumentList.Add("-e"); }
+            else { psi.ArgumentList.Add("-w"); psi.ArgumentList.Add("new"); }
+            foreach (var a in new[] { "pwsh.exe", "-NoExit", "-Command", command })
+                psi.ArgumentList.Add(ghostty == null ? a.Replace(";", "\\;") : a);   // wt reads a bare ; as "next command"
             Process.Start(psi);
         }
         catch
         {
             var psi = new ProcessStartInfo("pwsh.exe") { UseShellExecute = true };
             foreach (var a in new[] { "-NoExit", "-Command", command }) psi.ArgumentList.Add(a);
-            Process.Start(psi);   // no Windows Terminal: a console window of its own
+            Process.Start(psi);   // no terminal: a console window of its own
         }
+    }
+
+    /// <summary>
+    /// ghostty.exe when it is the default terminal, else null (Windows Terminal). The same rule as windots'
+    /// bin\lib\terminal.ps1: ~\.config\windots\terminal names it; with no choice, Ghostty when installed.
+    /// </summary>
+    private static string? DefaultGhostty(string home)
+    {
+        var exe = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Ghostty", "bin", "ghostty.exe");
+        if (!File.Exists(exe)) return null;
+        var choice = "";
+        try { choice = File.ReadAllText(Path.Combine(home, ".config", "windots", "terminal")).Trim(); } catch { }
+        return choice == "windows-terminal" ? null : exe;
     }
 
     // ------------------------------------------------------------------ processes

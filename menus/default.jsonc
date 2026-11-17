@@ -30,11 +30,11 @@
 
   // Only the agents that are installed show up (`when`: cmd.exe `where`).
   "agent": { "icon": "\uf121", "label": "Agent", "description": "Open an AI agent in a terminal", "searchTerms": ["agente", "ai", "ia"] },
-  "agent.claude": { "icon": "\uf121", "label": "Claude", "action": "wt -d \"$env:USERPROFILE\" claude", "when": "where claude >nul 2>&1" },
-  "agent.codex": { "icon": "\uf121", "label": "Codex", "action": "wt -d \"$env:USERPROFILE\" codex", "when": "where codex >nul 2>&1" },
-  "agent.opencode": { "icon": "\uf121", "label": "OpenCode", "action": "wt -d \"$env:USERPROFILE\" opencode", "when": "where opencode >nul 2>&1" },
-  "agent.gemini": { "icon": "\uf121", "label": "Gemini", "action": "wt -d \"$env:USERPROFILE\" gemini", "when": "where gemini >nul 2>&1" },
-  "agent.copilot": { "icon": "\uf121", "label": "Copilot", "action": "wt -d \"$env:USERPROFILE\" copilot", "when": "where copilot >nul 2>&1" },
+  "agent.claude": { "icon": "\uf121", "label": "Claude", "action": "windots-launch-terminal claude", "when": "where claude >nul 2>&1" },
+  "agent.codex": { "icon": "\uf121", "label": "Codex", "action": "windots-launch-terminal codex", "when": "where codex >nul 2>&1" },
+  "agent.opencode": { "icon": "\uf121", "label": "OpenCode", "action": "windots-launch-terminal opencode", "when": "where opencode >nul 2>&1" },
+  "agent.gemini": { "icon": "\uf121", "label": "Gemini", "action": "windots-launch-terminal gemini", "when": "where gemini >nul 2>&1" },
+  "agent.copilot": { "icon": "\uf121", "label": "Copilot", "action": "windots-launch-terminal copilot", "when": "where copilot >nul 2>&1" },
 
   "style": { "icon": "\uf1fc", "label": "Style", "description": "Theme, font, background", "searchTerms": ["aparencia", "apar\u00eancia", "appearance"] },
   "style.theme": { "icon": "\uf1fc", "label": "Theme", "provider": "themes", "aliases": ["theme", "themes"] },
@@ -74,6 +74,9 @@
   "install.font": { "icon": "\uf031", "label": "Font", "action": "windots-install-font", "searchTerms": ["fonte"] },
   "install.packages": { "icon": "\uf187", "label": "Default apps", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots reinstall pkgs; Read-Host Enter'", "description": "The winget apps windots expects", "searchTerms": ["pacotes", "aplicativos"] },
   "install.store": { "icon": "\uf290", "label": "Microsoft Store", "action": "start ms-windows-store:", "searchTerms": ["loja"] },
+  "install.terminal": { "icon": "\uf120", "label": "Terminal", "description": "The default terminal: Win+Enter, TUIs, > commands", "searchTerms": ["terminal padrao", "terminal padr\u00e3o", "ghostty"] },
+  "install.terminal.ghostty": { "icon": "\uf120", "label": "Ghostty", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots default terminal ghostty; Read-Host Enter'", "checked": "findstr /b /c:ghostty \"%USERPROFILE%\\.config\\windots\\terminal\" >nul 2>&1", "description": "github.com/higorhgon/ghostty; installed when missing" },
+  "install.terminal.windows": { "icon": "\uf120", "label": "Windows Terminal", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots default terminal windows-terminal; Read-Host Enter'", "checked": "findstr /b /c:windows-terminal \"%USERPROFILE%\\.config\\windots\\terminal\" >nul 2>&1" },
   "install.lazyvim": { "icon": "\uf121", "label": "LazyVim", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots install lazyvim; Read-Host Enter'", "searchTerms": ["neovim", "nvim"] },
   "install.files": { "icon": "\uf07b", "label": "Files (file manager)", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots install files; Read-Host Enter'", "searchTerms": ["arquivos"] },
   "install.windhawk": { "icon": "\uf1fc", "label": "Windhawk (taskbar style)", "action": "windots-launch-or-focus-tui --float --title=install pwsh -NoProfile -Command 'windots install windhawk; Read-Host Enter'" },
